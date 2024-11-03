@@ -44,6 +44,8 @@ kotlin {
 
             // window-size
             implementation(libs.screen.size)
+
+            implementation(libs.map)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
