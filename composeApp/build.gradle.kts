@@ -25,6 +25,9 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+
+            // Map
+            implementation(libs.android.map)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -48,6 +51,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.desktop.map)
         }
     }
 }

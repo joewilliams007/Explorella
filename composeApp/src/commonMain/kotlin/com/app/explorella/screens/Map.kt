@@ -17,6 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.app.explorella.drawMarker
+import com.app.explorella.mapView
+import jdk.jfr.Description
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,4 +44,27 @@ fun MapScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
     }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(paddingValues),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        mapView()
+    }
+    displayItems()
 }
+
+fun displayItems() {
+    // TODO: Remove BLOB Data and use database entries.
+    val points = listOf(
+        Point("DHBW","This is DHBW", 49.474358383071454,8.534289721213689),
+        Point("Random","This is Random", 32.3,7.0)
+    )
+    points.forEach {
+        println("Element: $it")
+        drawMarker(it.latitude, it.longitude,"DHBW","Hiii",null)
+    }
+}
+
+data class Point(val title: String, val description: String, val latitude: Double, val longitude: Double)

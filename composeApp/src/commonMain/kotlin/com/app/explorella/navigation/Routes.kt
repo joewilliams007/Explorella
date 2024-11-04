@@ -27,8 +27,8 @@ val navigationItemsLists = listOf(
         route = Routes.Home.route,
     ),
     NavigationItem(
-        unSelectedIcon = Icons.Outlined.Star,
-        selectedIcon = Icons.Filled.Star,
+        unSelectedIcon = Icons.Outlined.Favorite,
+        selectedIcon = Icons.Filled.Favorite,
         title = "Timeline",
         route = Routes.Timeline.route,
     ),
@@ -39,8 +39,8 @@ val navigationItemsLists = listOf(
         route = Routes.Map.route,
     ),
     NavigationItem(
-        unSelectedIcon = Icons.Outlined.Favorite,
-        selectedIcon = Icons.Filled.Favorite,
+        unSelectedIcon = Icons.Outlined.Star,
+        selectedIcon = Icons.Filled.Star,
         title = "Bucket list",
         route = Routes.BucketList.route,
     ),
