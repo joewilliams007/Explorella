@@ -2,13 +2,15 @@ package com.app.explorella
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.VectorDrawable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -23,13 +25,17 @@ import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
+var mapViewerState: MutableState<MapView?> = mutableStateOf(null)
+var contextState: MutableState<Context?> = mutableStateOf<Context?>(null)
+
 @Composable
-actual fun MapView() {
+actual fun mapView() {
     val boundingBox = BoundingBox(85.0, 180.0, -85.0, -180.0)
     val minZoomLevel = 3.0
     val maxZoomLevel = 18.0
     val mapView = rememberMapViewWithLifecycle()
-    val context = LocalContext.current
+    mapViewerState.value = mapView
+    contextState.value = LocalContext.current
     AndroidView({ mapView }) {
         mapView.setTileSource(TileSourceFactory.MAPNIK)
         mapView.setMultiTouchControls(true)
@@ -39,22 +45,6 @@ actual fun MapView() {
         mapView.minZoomLevel = minZoomLevel
         mapView.maxZoomLevel = maxZoomLevel
 
-        val bitmap = getBitmapFromVectorDrawable(context, R.drawable.location_correct)
-        val heart = getBitmapFromVectorDrawable(context, R.drawable.heart)
-
-        val marker = Marker(mapView)
-        marker.position = GeoPoint(51.5074, -0.1278)
-        marker.title = "London"
-        marker.icon = BitmapDrawable(context.resources, bitmap)
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        mapView.overlays.add(marker)
-
-        val markerDHBW = Marker(mapView)
-        markerDHBW.position = GeoPoint(49.474358383071454, 8.534289721213689)
-        markerDHBW.title = "DHBW"
-        markerDHBW.icon = BitmapDrawable(context.resources, heart)
-        markerDHBW.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        mapView.overlays.add(markerDHBW)
     }
 }
 
@@ -70,7 +60,6 @@ fun getBitmapFromVectorDrawable(context: Context, drawableId: Int): Bitmap {
     vectorDrawable.draw(canvas)
     return bitmap
 }
-
 
 @Composable
 private fun rememberMapViewWithLifecycle(): MapView {
@@ -92,5 +81,29 @@ class MapViewLifecycleObserver(private val mapView: MapView) : DefaultLifecycleO
     }
     override fun onPause(owner: LifecycleOwner) {
         mapView.onPause()
+    }
+}
+
+actual fun drawMarker(
+    latitude: Double,
+    longitude: Double,
+    title: String,
+    description: String,
+    image: ImageVector?
+) {
+    val mapView = mapViewerState.value
+    val context = contextState.value
+    if (mapView != null) {
+        val marker = Marker(mapView)
+        marker.position = GeoPoint(latitude, longitude)
+        marker.title = title
+        marker.subDescription = description
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        if (context != null) {
+            val bitmap = getBitmapFromVectorDrawable(context, R.drawable.location_correct)
+            val heart = getBitmapFromVectorDrawable(context, R.drawable.heart)
+            marker.icon = BitmapDrawable(context.resources, bitmap)
+        }
+        mapView.overlays.add(marker)
     }
 }
