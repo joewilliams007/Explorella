@@ -33,7 +33,7 @@ actual fun mapView() {
     val boundingBox = BoundingBox(85.0, 180.0, -85.0, -180.0)
     val minZoomLevel = 3.0
     val maxZoomLevel = 18.0
-    val mapView = rememberMapViewWithLifecycle()
+    val mapView = createOSMDroidMap()
     mapViewerState.value = mapView
     contextState.value = LocalContext.current
     AndroidView({ mapView }) {
@@ -62,7 +62,7 @@ fun getBitmapFromVectorDrawable(context: Context, drawableId: Int): Bitmap {
 }
 
 @Composable
-private fun rememberMapViewWithLifecycle(): MapView {
+private fun createOSMDroidMap(): MapView {
     val context = LocalContext.current
     val mapView = remember { MapView(context).apply { clipToOutline = true } }
     val observer = remember { MapViewLifecycleObserver(mapView) }
@@ -93,17 +93,19 @@ actual fun drawMarker(
 ) {
     val mapView = mapViewerState.value
     val context = contextState.value
-    if (mapView != null) {
-        val marker = Marker(mapView)
-        marker.position = GeoPoint(latitude, longitude)
-        marker.title = title
-        marker.subDescription = description
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        if (context != null) {
-            val bitmap = getBitmapFromVectorDrawable(context, R.drawable.location_correct)
-            val heart = getBitmapFromVectorDrawable(context, R.drawable.heart)
-            marker.icon = BitmapDrawable(context.resources, bitmap)
-        }
-        mapView.overlays.add(marker)
+
+    if (mapView == null) {
+        return
     }
+
+    val marker = Marker(mapView)
+    marker.position = GeoPoint(latitude, longitude)
+    marker.title = title
+    marker.subDescription = description
+    marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+    if (context != null) {
+        val bitmap = getBitmapFromVectorDrawable(context, R.drawable.location_correct)
+        marker.icon = BitmapDrawable(context.resources, bitmap)
+    }
+    mapView.overlays.add(marker)
 }

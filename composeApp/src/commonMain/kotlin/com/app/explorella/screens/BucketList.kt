@@ -26,16 +26,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.app.explorella.database.BucketViewModel
-import com.app.explorella.database.DriverFactory
+import app.cash.sqldelight.db.SqlDriver
+import com.app.explorella.BucketViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BucketListScreen(
     rootNavController: NavController,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    sqlDriver: SqlDriver
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -44,7 +44,7 @@ fun BucketListScreen(
 
     Column(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
-        verticalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.spacedBy(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TopAppBar(
@@ -83,29 +83,37 @@ fun BucketListScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
-        // TODO: Pass DriverFactory instances from platform specific sides
-//        val viewModel: BucketViewModel = BucketViewModel(
-//            driverFactory = driverFactory
-//        )
-//
-//        // Button to add a bucket entry
-//        Button(onClick = {
-//            viewModel.addBucketEntry(
-//                title = title,
-//                description = description,
-//                latitude = latitude.toDoubleOrNull() ?: 0.0,
-//                longitude = longitude.toDoubleOrNull() ?: 0.0
-//            )
-//        }) {
-//            Text("Add Bucket Entry")
-//        }
-//
-//        // Example of displaying all bucket entries
-//        val bucketEntries = viewModel.getAllBucketEntries()
-//        LazyColumn {
-//            items(bucketEntries) { entry ->
-//                Text(text = entry.title)
-//            }
-//        }
+        /**
+         * This is only an example on how to use the database!!
+         *
+         * To create the structure of a new table please enter the queries to the file
+         * /AndroidStudioProjects/Explorella/composeApp/src/commonMain/sqldelight/com/app/explorella/Database.sq
+         *
+         * The command ./gradlew :composeApp:generateSqlDelightInterface will then generate the type-safe code for use.
+         * For further abstraction, create a viewmodel. Such as e.g. BucketViewModel.
+         */
+        val viewModel: BucketViewModel = BucketViewModel(
+            sqlDriver = sqlDriver
+        )
+
+        // Button to add a bucket entry
+        Button(onClick = {
+            viewModel.addBucketEntry(
+                title = title,
+                description = description,
+                latitude = latitude.toDoubleOrNull() ?: 0.0,
+                longitude = longitude.toDoubleOrNull() ?: 0.0
+            )
+        }) {
+            Text("Add Bucket Entry")
+        }
+
+        // Example of displaying all bucket entries
+        val bucketEntries = viewModel.getAllBucketEntries()
+        LazyColumn {
+            items(bucketEntries) { entry ->
+                Text(text = entry.title)
+            }
+        }
     }
 }

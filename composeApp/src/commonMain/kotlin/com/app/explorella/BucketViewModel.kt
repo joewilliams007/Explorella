@@ -1,10 +1,10 @@
-package com.app.explorella.database
+package com.app.explorella
 
 import androidx.lifecycle.ViewModel
-import com.app.explorella.BucketEntry
+import app.cash.sqldelight.db.SqlDriver
 
-class BucketViewModel(driverFactory: DriverFactory) : ViewModel() {
-    private val database = createDatabase(driverFactory)
+class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
+    private val database = createDatabase(sqlDriver)
     private val bucketQueries = database.databaseQueries
 
     // Function to insert a new bucket entry

@@ -1,8 +1,7 @@
-package com.app.explorella.database
+package com.app.explorella
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.app.explorella.Database
 
 actual class DriverFactory {
     actual fun createDriver(): SqlDriver {
