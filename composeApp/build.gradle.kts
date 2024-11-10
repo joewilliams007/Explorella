@@ -7,17 +7,37 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.sqlDelight)
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("com.app.explorella")
+        }
+    }
 }
 
 kotlin {
+    sourceSets.androidMain.dependencies {
+        implementation(libs.android.driver)
+    }
+
+    sourceSets.nativeMain.dependencies {
+        implementation(libs.native.driver)
+    }
+
+    sourceSets.jvmMain.dependencies {
+        implementation(libs.sqlite.driver)
+    }
+
+    jvm("desktop")
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
-    jvm("desktop")
     
     sourceSets {
         val desktopMain by getting
@@ -47,6 +67,10 @@ kotlin {
 
             // window-size
             implementation(libs.screen.size)
+
+            // Sql
+            implementation(libs.sqlite.driver)
+            implementation(libs.sqldelight)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

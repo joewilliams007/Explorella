@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.navigation.BottomNavigationBar
 import com.app.explorella.navigation.NavigationItem
 import com.app.explorella.navigation.NavigationSideBar
@@ -24,7 +25,7 @@ import com.app.explorella.navigation.navigationItemsLists
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(sqlDriver: SqlDriver) {
     val windowSizeClass = calculateWindowSizeClass()
     val isMediumExpandedWWSC by remember(windowSizeClass) {
         derivedStateOf {
@@ -82,7 +83,8 @@ fun MainScreen() {
                 // Restore state when re-selecting a previously selected item
                 restoreState = true
             }
-        })
+        },
+        sqlDriver = sqlDriver)
 }
 
 @Composable
@@ -93,6 +95,7 @@ fun MainScaffold(
     isBottomBarVisible: Boolean,
     isMainScreenVisible: Boolean,
     onItemClick: (NavigationItem) -> Unit,
+    sqlDriver: SqlDriver
 ) {
     Row {
         AnimatedVisibility(
@@ -140,6 +143,7 @@ fun MainScaffold(
             RootNavGraph(
                 rootNavController = rootNavController,
                 innerPadding = innerPadding,
+                sqlDriver = sqlDriver
             )
         }
     }

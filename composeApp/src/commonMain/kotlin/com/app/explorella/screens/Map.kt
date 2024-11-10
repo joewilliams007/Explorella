@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.drawMarker
 import com.app.explorella.mapView
 import jdk.jfr.Description
@@ -25,7 +26,8 @@ import jdk.jfr.Description
 @Composable
 fun MapScreen(
     rootNavController: NavController,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    sqlDriver: SqlDriver
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
@@ -45,13 +47,23 @@ fun MapScreen(
         Spacer(modifier = Modifier.height(20.dp))
     }
 
+    // file: screens/Map.kt
+
     Column(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         mapView()
+        drawMarker(
+            49.474358383071454,
+            8.534289721213689,
+            "DHBW",
+            "Hiii",
+            null
+        )
     }
+
     displayItems()
 }
 
