@@ -1,14 +1,66 @@
-CREATE TABLE bucketEntry (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  description TEXT,
-  latitude REAL,
-  longitude REAL
+CREATE TABLE IF NOT EXISTS BucketItem (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    priority INTEGER,
+    icon TEXT,
+    latitude REAL,
+    longitude REAL,
+    timestamp INTEGER
 );
 
-insertBucketEntry:
-INSERT INTO bucketEntry (title, description, latitude, longitude)
-VALUES (?, ?, ?, ?);
+insertBucketItem:
+INSERT INTO BucketItem (title, description, priority, icon, latitude, longitude, timestamp)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
-selectAllBucketEntries:
-SELECT * FROM bucketEntry;
+selectAllBucketItemsAsc:
+SELECT * FROM BucketItem ORDER BY timestamp ASC;
+
+selectAllBucketItemsDesc:
+SELECT * FROM BucketItem ORDER BY timestamp DESC;
+
+CREATE TABLE IF NOT EXISTS Notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bucket_id INTEGER,
+    title TEXT NOT NULL,
+    note TEXT,
+    image TEXT,
+    timestamp INTEGER,
+    FOREIGN KEY ( bucket_id )
+        REFERENCES BucketItem ( id )
+        ON DELETE CASCADE
+);
+
+insertNote:
+INSERT INTO Notes (title, note, image, bucket_id, timestamp)
+VALUES (?, ?, ?, ?, ?);
+
+selectAllNotesAsc:
+SELECT * FROM Notes ORDER BY timestamp ASC;
+
+setNote:
+UPDATE Notes SET title = ?, note = ?, image = ? WHERE id = ?;
+
+CREATE TABLE IF NOT EXISTS Todo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bucket_id INTEGER,
+    task TEXT NOT NULL,
+    complete INTEGER NOT NULL DEFAULT 0,
+    timestamp INTEGER,
+    FOREIGN KEY ( bucket_id )
+        REFERENCES BucketItem ( id )
+        ON DELETE CASCADE
+);
+
+insertTodo:
+INSERT INTO Todo (task, bucket_id, timestamp)
+VALUES (?, ?, ?);
+
+selectAllTodosDesc:
+SELECT * FROM Todo ORDER BY timestamp DESC;
+
+setCompleteTodo:
+UPDATE Todo SET complete=? WHERE id = ?;
+
+setTaskTodo:
+UPDATE Todo SET task = ? WHERE id = ?;
