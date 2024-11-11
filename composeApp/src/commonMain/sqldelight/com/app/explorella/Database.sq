@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS BucketItem (
     icon TEXT,
     latitude REAL,
     longitude REAL,
+    complete INTEGER NOT NULL DEFAULT 0,
     timestamp INTEGER
 );
 
@@ -18,6 +19,9 @@ SELECT * FROM BucketItem ORDER BY timestamp ASC;
 
 selectAllBucketItemsDesc:
 SELECT * FROM BucketItem ORDER BY timestamp DESC;
+
+setBucketItemComplete:
+UPDATE BucketItem SET complete=? WHERE id=?;
 
 CREATE TABLE IF NOT EXISTS Notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
