@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
-import androidx.compose.ui.graphics.vector.ImageVector
+import com.app.explorella.models.GeoPoint
 import org.jxmapviewer.JXMapViewer
 import org.jxmapviewer.OSMTileFactoryInfo
 import org.jxmapviewer.viewer.DefaultTileFactory
@@ -95,18 +95,32 @@ fun createJXMapViewer(): JPanel {
 }
 
 var waypoints = mutableSetOf<Waypoint>()
-actual fun drawMarker(
-    latitude: Double,
-    longitude: Double,
-    title: String,
-    description: String,
-    image: ImageVector?
-) {
+actual fun drawMarker(bucketItem: BucketItem) {
+    bucketItem.latitude ?: return
+    bucketItem.longitude ?: return
     val mapViewer = mapViewerState.value ?: return
-    val position = GeoPosition(latitude, longitude)
+    val position = GeoPosition(bucketItem.latitude, bucketItem.longitude)
     val waypoint = Waypoint { position }
     waypoints.add(waypoint)
     val waypointPainter = WaypointPainter<Waypoint>()
     waypointPainter.setWaypoints(waypoints)
     mapViewer.setOverlayPainter(waypointPainter)
+}
+
+actual fun zoomMap(geoPoint: GeoPoint) {
+    val mapViewer = mapViewerState.value ?: return
+    mapViewer.zoom = 10
+    mapViewer.addressLocation = GeoPosition(geoPoint.latitude,geoPoint.longitude)
+}
+
+actual fun addMapClickListener(onMapClick: (GeoPoint) -> Unit) {
+    val mapViewer = mapViewerState.value ?: return
+    mapViewer.addMouseListener(object : MouseAdapter() {
+        override fun mouseClicked(e: MouseEvent) {
+            val geoPosition = mapViewer.convertPointToGeoPosition(e.point)
+            println("Clicked at Latitude: ${geoPosition.latitude}, Longitude: ${geoPosition.longitude}")
+
+            onMapClick(GeoPoint(geoPosition.latitude,geoPosition.longitude))
+        }
+    })
 }
