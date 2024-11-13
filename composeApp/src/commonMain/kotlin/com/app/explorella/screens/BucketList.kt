@@ -101,8 +101,11 @@ fun BucketListScreen(
             viewModel.addBucketEntry(
                 title = title,
                 description = description,
+                priority = 0,
+                icon = null,
                 latitude = latitude.toDoubleOrNull() ?: 0.0,
-                longitude = longitude.toDoubleOrNull() ?: 0.0
+                longitude = longitude.toDoubleOrNull() ?: 0.0,
+                timestamp = System.currentTimeMillis()
             )
         }) {
             Text("Add Bucket Entry")

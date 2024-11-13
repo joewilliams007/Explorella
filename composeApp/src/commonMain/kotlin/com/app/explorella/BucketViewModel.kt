@@ -8,17 +8,20 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
     private val bucketQueries = database.databaseQueries
 
     // Function to insert a new bucket entry
-    fun addBucketEntry(title: String, description: String?, latitude: Double, longitude: Double) {
-        bucketQueries.insertBucketEntry(
+    fun addBucketEntry(title: String, description: String?, priority: Long, icon: String?, latitude: Double, longitude: Double, timestamp: Long) {
+        bucketQueries.insertBucketItem(
             title = title,
             description = description,
+            priority = priority,
+            icon = icon,
             latitude = latitude,
-            longitude = longitude
+            longitude = longitude,
+            timestamp = timestamp
         )
     }
 
     // Function to get all bucket entries
-    fun getAllBucketEntries(): List<BucketEntry> {
-        return bucketQueries.selectAllBucketEntries().executeAsList()
+    fun getAllBucketEntries(): List<BucketItem> {
+        return bucketQueries.selectAllBucketItemsDesc().executeAsList()
     }
 }
