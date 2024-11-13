@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.cash.sqldelight.db.SqlDriver
-import com.app.explorella.BucketViewModel
+import com.app.explorella.database.BucketViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,8 +40,8 @@ fun BucketListScreen(
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf("49.474358383071454") }
+    var longitude by remember { mutableStateOf("8.534289721213689") }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
@@ -111,8 +112,8 @@ fun BucketListScreen(
             Text("Add Bucket Entry")
         }
 
-        // Example of displaying all bucket entries
-        val bucketEntries = viewModel.getAllBucketEntries()
+        val bucketEntries by viewModel.bucketEntries.collectAsState()
+
         LazyColumn {
             items(bucketEntries) { entry ->
                 Text(text = entry.title)
