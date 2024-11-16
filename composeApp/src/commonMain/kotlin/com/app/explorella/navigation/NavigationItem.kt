@@ -1,8 +1,6 @@
 package com.app.explorella.navigation
 
 import androidx.compose.ui.graphics.vector.ImageVector
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.StringResource
 
 data class NavigationItem(
     val unSelectedIcon: ImageVector /* or  DrawableResource*/,
