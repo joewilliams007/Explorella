@@ -22,10 +22,10 @@ fun RootNavGraph(
     NavHost(
         navController = rootNavController,
         startDestination = Graph.NAVIGATION_BAR_SCREEN_GRAPH,
-        enterTransition = { fadeIn(initialAlpha = 0f, animationSpec = tween(durationMillis = 200)) },
-        exitTransition = { fadeOut() },
-        popEnterTransition = { fadeIn(initialAlpha = 0f, animationSpec = tween(durationMillis = 200)) },
-        popExitTransition = { fadeOut() }
+        enterTransition = { fadeIn(initialAlpha = 0f, animationSpec = tween(durationMillis = 50)) },
+        exitTransition = { fadeOut(animationSpec = tween(durationMillis = 50)) },
+        popEnterTransition = { fadeIn(initialAlpha = 0f, animationSpec = tween(durationMillis = 50)) },
+        popExitTransition = { fadeOut(animationSpec = tween(durationMillis = 50)) }
     ) {
         mainNavGraph(rootNavController = rootNavController, innerPadding = innerPadding, sqlDriver = sqlDriver)
         composable(
