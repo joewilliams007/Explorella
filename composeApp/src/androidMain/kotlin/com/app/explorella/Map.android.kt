@@ -19,7 +19,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.app.explorella.models.MapState
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
@@ -31,10 +35,11 @@ import org.osmdroid.views.overlay.Overlay
 private var mapViewerState: MutableState<MapView?> = mutableStateOf(null)
 private var contextState: MutableState<Context?> = mutableStateOf<Context?>(null)
 private var onMarkerClickListener: ((BucketItem) -> Unit)? = null
+private var onMapChangeListener: ((MapState) -> Unit)? = null
 
 @SuppressLint("WrongConstant", "NewApi")
 @Composable
-actual fun mapView() {
+actual fun mapView(mapState: MapState) {
     val boundingBox = BoundingBox(85.0, 180.0, -85.0, -180.0)
     val minZoomLevel = 3.0
     val maxZoomLevel = 18.0
@@ -44,7 +49,8 @@ actual fun mapView() {
     AndroidView({ mapView }) {
         mapView.setTileSource(TileSourceFactory.MAPNIK)
         mapView.setMultiTouchControls(true)
-        mapView.setZoomLevel(3.5)
+        mapView.setZoomLevel(mapState.zoom)
+        mapView.controller.setCenter(GeoPoint(mapState.geoPoint.latitude,mapState.geoPoint.longitude))
         mapView.setScrollableAreaLimitDouble(boundingBox) // Set scroll limits
         mapView.zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER) // Disable zoom controls
         mapView.minZoomLevel = minZoomLevel
@@ -121,6 +127,7 @@ actual fun zoomMap(geoPoint: com.app.explorella.models.GeoPoint) {
     val mapView = mapViewerState.value
     mapView ?: return
     mapView.controller.animateTo(GeoPoint(geoPoint.latitude,geoPoint.longitude))
+    onMapChangeListener?.let { it(MapState(geoPoint, mapView.zoomLevelDouble)) }
 }
 
 /**
@@ -147,4 +154,37 @@ actual fun addMapClickListener(onMapClick: (com.app.explorella.models.GeoPoint) 
  */
 actual fun addMarkerClickListener(onMarkerClick: (BucketItem) -> Unit) {
     onMarkerClickListener = onMarkerClick
+}
+
+/**
+ * Creates a listener for map state changes.
+ */
+actual fun addMapChangeListener(onMapChange: (MapState) -> Unit) {
+    onMapChangeListener = onMapChange
+
+    val mapView = mapViewerState.value ?: return
+    mapView.addMapListener(object : MapListener {
+        override fun onScroll(event: ScrollEvent?): Boolean {
+            onMapChange(MapState(com.app.explorella.models.GeoPoint(mapView.mapCenter.latitude, mapView.mapCenter.longitude),mapView.zoomLevelDouble))
+            return true
+        }
+
+        override fun onZoom(event: ZoomEvent?): Boolean {
+            onMapChange(MapState(com.app.explorella.models.GeoPoint(mapView.mapCenter.latitude, mapView.mapCenter.longitude),mapView.zoomLevelDouble))
+            return true
+        }
+    })
+}
+
+/**
+ * Clear all marker overlays.
+ */
+actual fun clearMarkers() {
+    val mapView = mapViewerState.value ?: return
+    mapView.overlays.forEach {
+        if (it is Marker) {
+            mapView.overlays.remove(it)
+        }
+    }
+    mapView.invalidate()
 }

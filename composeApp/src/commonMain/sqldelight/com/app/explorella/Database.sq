@@ -83,7 +83,7 @@ UPDATE Todo SET task = ? WHERE id = ?;
 
 CREATE TABLE IF NOT EXISTS Preferences (
     preference_key TEXT PRIMARY KEY NOT NULL,
-    preference_value TEXT
+    preference_value TEXT NOT NULL
 );
 
 createPreference:
