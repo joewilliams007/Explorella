@@ -11,3 +11,5 @@ expect fun drawMarker(bucketItem: BucketItem)
 expect fun zoomMap(geoPoint: GeoPoint)
 
 expect fun addMapClickListener(onMapClick: (GeoPoint) -> Unit)
+
+expect fun addMarkerClickListener(onMarkerClick: (BucketItem) -> Unit)
