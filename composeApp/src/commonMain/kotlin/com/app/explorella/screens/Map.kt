@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,12 +37,22 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.BucketItem
+import com.app.explorella.addMapChangeListener
 import com.app.explorella.addMapClickListener
 import com.app.explorella.addMarkerClickListener
+import com.app.explorella.clearMarkers
 import com.app.explorella.database.BucketViewModel
+import com.app.explorella.database.PreferencesViewModel
+import com.app.explorella.database.PreferencesViewModel.Companion.MAP_LOCATION_LATITUDE
+import com.app.explorella.database.PreferencesViewModel.Companion.MAP_LOCATION_LATITUDE_DEFAULT
+import com.app.explorella.database.PreferencesViewModel.Companion.MAP_LOCATION_LONGITUDE
+import com.app.explorella.database.PreferencesViewModel.Companion.MAP_LOCATION_LONGITUDE_DEFAULT
+import com.app.explorella.database.PreferencesViewModel.Companion.MAP_ZOOM_LEVEL
+import com.app.explorella.database.PreferencesViewModel.Companion.MAP_ZOOM_LEVEL_DEFAULT
 import com.app.explorella.drawMarker
 import com.app.explorella.mapView
 import com.app.explorella.models.GeoPoint
+import com.app.explorella.models.MapState
 import com.app.explorella.res.Res
 import com.app.explorella.res.map_options_all
 import com.app.explorella.res.map_options_complete
@@ -58,6 +69,14 @@ fun MapScreen(
     paddingValues: PaddingValues,
     sqlDriver: SqlDriver
 ) {
+    val preferences: PreferencesViewModel = PreferencesViewModel(
+        sqlDriver = sqlDriver
+    )
+
+    val bucket: BucketViewModel = BucketViewModel(
+        sqlDriver = sqlDriver
+    )
+
     val scaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -69,9 +88,14 @@ fun MapScreen(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
-            mapView()
+            // Restore map state.
+            mapView(MapState(GeoPoint(
+                preferences.getPreference(MAP_LOCATION_LATITUDE,MAP_LOCATION_LATITUDE_DEFAULT).toDouble(),
+                preferences.getPreference(MAP_LOCATION_LONGITUDE,MAP_LOCATION_LONGITUDE_DEFAULT).toDouble()),
+                preferences.getPreference(MAP_ZOOM_LEVEL,MAP_ZOOM_LEVEL_DEFAULT).toDouble()))
+
             var selectedIndex by remember { mutableStateOf(0) }
             val options = listOf(stringResource(Res.string.map_options_all), stringResource(Res.string.map_options_complete), stringResource(Res.string.map_options_incomplete))
             SingleChoiceSegmentedButtonRow(
@@ -88,26 +112,22 @@ fun MapScreen(
                         ),
                         onClick = {
                             selectedIndex = index
+                            clearMarkers()
                             when (selectedIndex) {
-                            /**
-                             * TODO: Implement different queries when database has needed structure. Add vibration haptic feedback.
-                             */
                             0 -> {
-                                println("Selected index is 0")
+                                bucket.getAllBucketEntriesDesc()
                             }
                                 1 -> {
-                                    // Handle case for selectedIndex = 1
-                                    println("Selected index is 1")
+                                    bucket.getCompleteBucketEntries()
                                 }
                                 2 -> {
-                                    // Handle case for selectedIndex = 2
-                                    println("Selected index is 2")
+                                    bucket.getIncompleteBucketEntries()
                                 }
                                 else -> {
-                                    // Handle default case
-                                    println("Selected index is something else")
+                                    bucket.getAllBucketEntriesDesc()
                                 }
                             }
+                            displayMarkers(bucket.bucketEntries.value)
                         },
                         selected = index == selectedIndex
                     ) {
@@ -116,28 +136,27 @@ fun MapScreen(
                 }
             }
 
-            pager(sqlDriver, paddingValues)
-            listenMap(scaffoldState = scaffoldState, coroutineScope = coroutineScope)
+            pager(sqlDriver, paddingValues, bucket)
+            listenMap(scaffoldState = scaffoldState, coroutineScope = coroutineScope, preferences = preferences)
         }
-
     }
 }
 
 @Composable
-fun pager(sqlDriver: SqlDriver, paddingValues: PaddingValues) {
-    val viewModel: BucketViewModel = BucketViewModel(
-        sqlDriver = sqlDriver
-    )
-    val bucketEntries = viewModel.getAllBucketEntriesDesc()
+fun pager(sqlDriver: SqlDriver, paddingValues: PaddingValues, bucket: BucketViewModel) {
+    bucket.getAllBucketEntriesDesc()
+    val bucketEntries by bucket.bucketEntries.collectAsState()
+    if (bucketEntries.isEmpty()) {
+        return
+    }
     displayMarkers(bucketEntries)
     val pagerState = rememberPagerState(pageCount = { bucketEntries.size })
 
     Row(
         modifier = Modifier
             .fillMaxSize().padding(paddingValues = paddingValues),
-        verticalAlignment = Alignment.Bottom // Align content in the Row to the bottom
+        verticalAlignment = Alignment.Bottom
     ) {
-
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
@@ -175,11 +194,15 @@ fun pager(sqlDriver: SqlDriver, paddingValues: PaddingValues) {
                 }
             }
         }
-
+        var firstIgnored = false
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
             .collect { pageIndex ->
-                bucketEntries[pageIndex].zoom()
+                if (!firstIgnored) {
+                    firstIgnored = true
+                } else {
+                    bucketEntries[pageIndex].zoom()
+                }
             }
         }
     }
@@ -189,7 +212,7 @@ fun pager(sqlDriver: SqlDriver, paddingValues: PaddingValues) {
  * Listen to map click events by the user.
  */
 @OptIn(ExperimentalMaterial3Api::class)
-fun listenMap(scaffoldState: BottomSheetScaffoldState, coroutineScope: CoroutineScope) {
+fun listenMap(scaffoldState: BottomSheetScaffoldState, coroutineScope: CoroutineScope, preferences: PreferencesViewModel) {
     val onMapClick: (GeoPoint) -> Unit = { geoPoint ->
         println("Common code clicked on: ${geoPoint.latitude} ${geoPoint.longitude}")
     }
@@ -205,6 +228,18 @@ fun listenMap(scaffoldState: BottomSheetScaffoldState, coroutineScope: Coroutine
     }
 
     addMarkerClickListener(onMarkerClick)
+    var lastStateSave = System.currentTimeMillis()
+    val onStateChanged: (MapState) -> Unit = { state ->
+        val now = System.currentTimeMillis()
+        if (now-lastStateSave>300) {
+            preferences.setPreference(MAP_LOCATION_LATITUDE,state.geoPoint.latitude.toString())
+            preferences.setPreference(MAP_LOCATION_LONGITUDE,state.geoPoint.longitude.toString())
+            preferences.setPreference(MAP_ZOOM_LEVEL,state.zoom.toString())
+            lastStateSave = now
+        }
+    }
+
+    addMapChangeListener(onStateChanged)
 }
 
 private fun BucketItem.zoom() {

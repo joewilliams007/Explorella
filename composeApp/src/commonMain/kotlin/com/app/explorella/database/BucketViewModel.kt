@@ -46,4 +46,22 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
         _bucketEntries.value = items
         return items
     }
+
+    /**
+     * Get complete bucket entries.
+     */
+    fun getCompleteBucketEntries(): List<BucketItem> {
+        val items =  bucketQueries.selectCompleteBucketItems().executeAsList()
+        _bucketEntries.value = items
+        return items
+    }
+
+    /**
+     * Get incomplete bucket entries.
+     */
+    fun getIncompleteBucketEntries(): List<BucketItem> {
+        val items =  bucketQueries.selectIncompleteBucketItems().executeAsList()
+        _bucketEntries.value = items
+        return items
+    }
 }

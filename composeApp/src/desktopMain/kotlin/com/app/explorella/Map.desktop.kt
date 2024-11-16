@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import com.app.explorella.models.GeoPoint
+import com.app.explorella.models.MapState
 import org.jxmapviewer.JXMapViewer
 import org.jxmapviewer.OSMTileFactoryInfo
 import org.jxmapviewer.viewer.DefaultTileFactory
@@ -23,7 +24,7 @@ import javax.swing.JPanel
 var mapViewerState: MutableState<JXMapViewer?> = mutableStateOf(null)
 
 @Composable
-actual fun mapView() {
+actual fun mapView(mapState: MapState) {
     val mapViewer = remember { createJXMapViewer() }
     SwingPanel(
         factory = { mapViewer },
@@ -127,4 +128,10 @@ actual fun addMapClickListener(onMapClick: (GeoPoint) -> Unit) {
 
 actual fun addMarkerClickListener(onMarkerClick: (BucketItem) -> Unit) {
     // TODO: Implement desktop marker listener.
+}
+
+actual fun addMapChangeListener(onMapChange: (MapState) -> Unit) {
+}
+
+actual fun clearMarkers() {
 }
