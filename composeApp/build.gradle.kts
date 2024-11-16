@@ -122,3 +122,9 @@ compose.desktop {
         }
     }
 }
+
+compose.resources {
+    publicResClass = false
+    packageOfResClass = "com.app.explorella.res"
+    generateResClass = auto
+}

@@ -28,8 +28,9 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Overlay
 
-var mapViewerState: MutableState<MapView?> = mutableStateOf(null)
-var contextState: MutableState<Context?> = mutableStateOf<Context?>(null)
+private var mapViewerState: MutableState<MapView?> = mutableStateOf(null)
+private var contextState: MutableState<Context?> = mutableStateOf<Context?>(null)
+private var onMarkerClickListener: ((BucketItem) -> Unit)? = null
 
 @SuppressLint("WrongConstant", "NewApi")
 @Composable
@@ -87,11 +88,12 @@ class MapViewLifecycleObserver(private val mapView: MapView) : DefaultLifecycleO
     }
 }
 
+/**
+ * Draws a marker at the bucket items position.
+ */
 actual fun drawMarker(bucketItem: BucketItem) {
-    val mapView = mapViewerState.value
+    val mapView = mapViewerState.value ?: return
     val context = contextState.value
-
-    mapView ?: return
     bucketItem.latitude ?: return
     bucketItem.longitude ?: return
 
@@ -100,6 +102,11 @@ actual fun drawMarker(bucketItem: BucketItem) {
     marker.title = bucketItem.title
     marker.subDescription = bucketItem.description
     marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+    marker.setOnMarkerClickListener { _, _ ->
+        onMarkerClickListener?.invoke(bucketItem)
+        true
+    }
+
     if (context != null) {
         val bitmap = getBitmapFromVectorDrawable(context, R.drawable.location_correct)
         marker.icon = BitmapDrawable(context.resources, bitmap)
@@ -107,20 +114,21 @@ actual fun drawMarker(bucketItem: BucketItem) {
     mapView.overlays.add(marker)
 }
 
+/**
+ * Animate zoom to a point.
+ */
 actual fun zoomMap(geoPoint: com.app.explorella.models.GeoPoint) {
     val mapView = mapViewerState.value
     mapView ?: return
-    mapView.setZoomLevel(5.0)
     mapView.controller.animateTo(GeoPoint(geoPoint.latitude,geoPoint.longitude))
 }
 
+/**
+ * Checks where the user clicks on the map!
+ */
 actual fun addMapClickListener(onMapClick: (com.app.explorella.models.GeoPoint) -> Unit) {
-    val mapView = mapViewerState.value
-    mapView ?: return
+    val mapView = mapViewerState.value ?: return
 
-    /**
-     * This code checks where the user clicks on the map!
-     */
     val overlay = object : Overlay() {
         override fun onSingleTapUp(event: MotionEvent, mapView: MapView): Boolean {
             val tapLocation = mapView.projection.fromPixels(event.x.toInt(), event.y.toInt()) as GeoPoint
@@ -132,4 +140,11 @@ actual fun addMapClickListener(onMapClick: (com.app.explorella.models.GeoPoint) 
         }
     }
     mapView.overlays.add(overlay)
+}
+
+/**
+ * Creates a listener for marker clicks.
+ */
+actual fun addMarkerClickListener(onMarkerClick: (BucketItem) -> Unit) {
+    onMarkerClickListener = onMarkerClick
 }

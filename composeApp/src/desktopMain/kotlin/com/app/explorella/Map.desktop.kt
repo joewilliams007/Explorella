@@ -124,3 +124,7 @@ actual fun addMapClickListener(onMapClick: (GeoPoint) -> Unit) {
         }
     })
 }
+
+actual fun addMarkerClickListener(onMarkerClick: (BucketItem) -> Unit) {
+    // TODO: Implement desktop marker listener.
+}

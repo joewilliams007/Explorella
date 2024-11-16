@@ -13,7 +13,9 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
     private val _bucketEntries = MutableStateFlow<List<BucketItem>>(emptyList())
     val bucketEntries: StateFlow<List<BucketItem>> = _bucketEntries
 
-    // Function to insert a new bucket entry
+    /**
+     * Insert a new bucket entry.
+     */
     fun addBucketEntry(title: String, description: String?, priority: Long, icon: String?, latitude: Double, longitude: Double, timestamp: Long) {
         bucketQueries.insertBucketItem(
             title = title,
@@ -24,12 +26,23 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
             longitude = longitude,
             timestamp = timestamp
         )
-        getAllBucketEntries()
+        getAllBucketEntriesDesc()
     }
 
-    // Function to get all bucket entries
-    fun getAllBucketEntries(): List<BucketItem> {
+    /**
+     * Get all bucket entries descending order.
+     */
+    fun getAllBucketEntriesDesc(): List<BucketItem> {
         val items =  bucketQueries.selectAllBucketItemsDesc().executeAsList()
+        _bucketEntries.value = items
+        return items
+    }
+
+    /**
+     * Get all bucket entries ascending order.
+     */
+    fun getAllBucketEntriesAsc(): List<BucketItem> {
+        val items =  bucketQueries.selectAllBucketItemsAsc().executeAsList()
         _bucketEntries.value = items
         return items
     }

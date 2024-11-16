@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Explorella</string>
+    <string name="map_options_all">All</string>
+    <string name="map_options_complete">Complete</string>
+    <string name="map_options_incomplete">Goal</string>
+</resources>
