@@ -20,6 +20,15 @@ SELECT * FROM BucketItem ORDER BY timestamp ASC;
 selectAllBucketItemsDesc:
 SELECT * FROM BucketItem ORDER BY timestamp DESC;
 
+getBucketItemSize:
+SELECT COUNT(*) AS rowcount FROM BucketItem;
+
+selectCompleteBucketItems:
+SELECT * FROM BucketItem WHERE complete=1 ORDER BY timestamp DESC;
+
+selectIncompleteBucketItems:
+SELECT * FROM BucketItem WHERE complete=0 ORDER BY timestamp DESC;
+
 setBucketItemComplete:
 UPDATE BucketItem SET complete=? WHERE id=?;
 
@@ -41,6 +50,9 @@ VALUES (?, ?, ?, ?, ?);
 
 selectAllNotesAsc:
 SELECT * FROM Notes ORDER BY timestamp ASC;
+
+getNotesSize:
+SELECT COUNT(*) AS rowcount FROM Notes WHERE id = ?;
 
 setNote:
 UPDATE Notes SET title = ?, note = ?, image = ? WHERE id = ?;
@@ -68,3 +80,18 @@ UPDATE Todo SET complete=? WHERE id = ?;
 
 setTaskTodo:
 UPDATE Todo SET task = ? WHERE id = ?;
+
+CREATE TABLE IF NOT EXISTS Preferences (
+    preference_key TEXT PRIMARY KEY NOT NULL,
+    preference_value TEXT
+);
+
+createPreference:
+INSERT INTO Preferences (preference_key, preference_value)
+VALUES (?, ?);
+
+setPreference:
+UPDATE Preferences SET preference_value=? WHERE preference_key=?;
+
+getPreference:
+SELECT * FROM Preferences WHERE preference_key=?;
