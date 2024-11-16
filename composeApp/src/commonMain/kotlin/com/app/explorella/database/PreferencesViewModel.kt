@@ -2,7 +2,6 @@ package com.app.explorella.database
 
 import androidx.lifecycle.ViewModel
 import app.cash.sqldelight.db.SqlDriver
-import com.app.explorella.BucketItem
 import com.app.explorella.Preferences
 import com.app.explorella.createDatabase
 
