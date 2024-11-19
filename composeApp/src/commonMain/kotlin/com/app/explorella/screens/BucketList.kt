@@ -52,11 +52,13 @@ fun BucketListScreen(
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("49.474358383071454") }
-    var longitude by remember { mutableStateOf("8.534289721213689") }
+    var latitude by remember { mutableStateOf("0") }
+    var longitude by remember { mutableStateOf("0") }
     var showDialog by remember { mutableStateOf(false) }
 
-    var inputText by remember { mutableStateOf("") }
+    val viewModel: BucketViewModel = BucketViewModel(
+        sqlDriver = sqlDriver
+    )
 
     Column(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
@@ -75,55 +77,29 @@ fun BucketListScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Input fields
-        TextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Title") }
-        )
-        TextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Description") }
-        )
-        TextField(
-            value = latitude,
-            onValueChange = { latitude = it },
-            label = { Text("Latitude") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        TextField(
-            value = longitude,
-            onValueChange = { longitude = it },
-            label = { Text("Longitude") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        );
-        Scaffold(
-            floatingActionButton = {
-                ExtendedFloatingActionButton(
-                    onClick = { showDialog = true }, // Open dialog on FAB click
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add"
-                        )
-                    },
-                    text = { Text("Add Item") },
-                    containerColor = MaterialTheme.colorScheme.primary,
-//                    contentColor = Color.White
+        val bucketEntries by viewModel.bucketEntries.collectAsState()
+
+        LazyColumn {
+            items(bucketEntries) { entry ->
+                Text(
+                    modifier = Modifier.clickable { rootNavController.navigate("ToDo/{{$entry.id}}")},
+                    text = entry.title
+                )
+            }
+        }
+
+        ExtendedFloatingActionButton(
+            onClick = { showDialog = true }, // Open dialog on FAB click
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add"
                 )
             },
-            content = { paddingValues ->
-                Box(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Tap the Add button to create an item")
-                }
-            }
+            text = { Text("Add Item") },
+            containerColor = MaterialTheme.colorScheme.primary,
         )
+
         // Add/Create Dialog
         if (showDialog) {
             AlertDialog(
@@ -142,9 +118,16 @@ fun BucketListScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
-                            value = inputText,
-                            onValueChange = { inputText = it },
-                            label = { Text("Item Name") },
+                            value = title,
+                            onValueChange = { title = it },
+                            label = { Text("Title") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = description,
+                            onValueChange = { description = it },
+                            label = { Text("Description") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -153,9 +136,17 @@ fun BucketListScreen(
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            // Handle create action (e.g., add item to a list)
+                            // TODO: longitude, latitude validation.
+                            viewModel.addBucketEntry(
+                                title = title,
+                                description = description,
+                                priority = 0,
+                                icon = null,
+                                latitude = latitude.toDoubleOrNull() ?: 0.0,
+                                longitude = longitude.toDoubleOrNull() ?: 0.0,
+                                timestamp = System.currentTimeMillis()
+                            )
                             showDialog = false
-                            // Add logic to process `inputText.text`
                         }
                     ) {
                         Text("Create")
@@ -169,44 +160,6 @@ fun BucketListScreen(
                     }
                 }
             )
-        }
-        /**
-         * This is only an example on how to use the database!!
-         *
-         * To create the structure of a new table please enter the queries to the file
-         * /AndroidStudioProjects/Explorella/composeApp/src/commonMain/sqldelight/com/app/explorella/Database.sq
-         *
-         * The command ./gradlew :composeApp:generateSqlDelightInterface will then generate the type-safe code for use.
-         * For further abstraction, create a viewmodel. Such as e.g. BucketViewModel.
-         */
-        val viewModel: BucketViewModel = BucketViewModel(
-            sqlDriver = sqlDriver
-        )
-
-        // Button to add a bucket entry
-        Button(onClick = {
-            viewModel.addBucketEntry(
-                title = title,
-                description = description,
-                priority = 0,
-                icon = null,
-                latitude = latitude.toDoubleOrNull() ?: 0.0,
-                longitude = longitude.toDoubleOrNull() ?: 0.0,
-                timestamp = System.currentTimeMillis()
-            )
-        }) {
-            Text("Add Bucket Entry")
-        }
-
-        val bucketEntries by viewModel.bucketEntries.collectAsState()
-
-        LazyColumn {
-            items(bucketEntries) { entry ->
-                Text(
-                    modifier = Modifier.clickable { rootNavController.navigate("ToDo/{{$entry.id}}")},
-                    text = entry.title
-                )
-            }
         }
     }
 }
