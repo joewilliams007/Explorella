@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,10 +50,6 @@ fun BucketListScreen(
     var longitude by remember { mutableStateOf("0") }
     var showDialog by remember { mutableStateOf(false) }
 
-    val viewModel: BucketViewModel = BucketViewModel(
-        sqlDriver = sqlDriver
-    )
-
     Column(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -70,17 +67,6 @@ fun BucketListScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        val bucketEntries by viewModel.bucketEntries.collectAsState()
-
-        LazyColumn {
-            items(bucketEntries) { entry ->
-                Text(
-                    modifier = Modifier.clickable { rootNavController.navigate("ToDo/{{$entry.id}}")},
-                    text = entry.title
-                )
-            }
-        }
-
         ExtendedFloatingActionButton(
             onClick = { showDialog = true }, // Open dialog on FAB click
             icon = {
@@ -91,6 +77,10 @@ fun BucketListScreen(
             },
             text = { Text("Add Item") },
             containerColor = MaterialTheme.colorScheme.primary,
+        )
+
+        val viewModel: BucketViewModel = BucketViewModel(
+            sqlDriver = sqlDriver
         )
 
         // Add/Create Dialog
@@ -153,6 +143,26 @@ fun BucketListScreen(
                     }
                 }
             )
+        }
+
+        val bucketEntries by viewModel.bucketEntries.collectAsState()
+
+        LazyColumn {
+            if (bucketEntries.isEmpty()) {
+                item {
+                    Text("No items to display", modifier = Modifier.padding(16.dp))
+                }
+            } else {
+                items(bucketEntries) { entry ->
+                    Text(
+                        modifier = Modifier.clickable { rootNavController.navigate("ToDo/{{$entry.id}}") },
+                        text = entry.title
+                    )
+                }
+            }
+        }
+        LaunchedEffect(bucketEntries) {
+            println("Bucket entries: $bucketEntries")
         }
     }
 }
