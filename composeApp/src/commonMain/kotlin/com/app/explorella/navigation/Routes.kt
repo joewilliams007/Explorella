@@ -15,7 +15,9 @@ sealed class Routes(var route: String) {
 
     data object Timeline : Routes("timeline")
     data object BucketList : Routes("bucketList")
-    data object Todo : Routes("toDo")
+    data object Todo : Routes("toDo/{bucketId}") {
+        fun createRoute(bucketId: Int) = "toDo/$bucketId"
+    }
     data object Map : Routes("map")
 }
 
@@ -44,10 +46,10 @@ val navigationItemsLists = listOf(
         title = "Bucket list",
         route = Routes.BucketList.route,
     ),
-    NavigationItem(
-        unSelectedIcon = Icons.Outlined.Check,
-        selectedIcon = Icons.Filled.Check,
-        title = "Todo",
-        route = Routes.Todo.route,
-    ),
+//    NavigationItem(
+//        unSelectedIcon = Icons.Outlined.Check,
+//        selectedIcon = Icons.Filled.Check,
+//        title = "Todo",
+//        route = Routes.Todo.route,
+//    ),
 )
