@@ -1,5 +1,6 @@
 package com.app.explorella.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -116,8 +117,12 @@ fun BucketListScreen(
 
         LazyColumn {
             items(bucketEntries) { entry ->
-                Text(text = entry.title)
+                Text(
+                    modifier = Modifier.clickable { rootNavController.navigate("ToDo/{{$entry.id}}")},
+                    text = entry.title
+                )
             }
         }
     }
 }
+
