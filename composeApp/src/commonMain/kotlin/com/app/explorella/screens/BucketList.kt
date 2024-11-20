@@ -79,6 +79,14 @@ fun BucketListScreen(
             containerColor = MaterialTheme.colorScheme.primary,
         )
 
+        /**
+         * To create the structure of a new table please enter the queries to the file
+         * /AndroidStudioProjects/Explorella/composeApp/src/commonMain/sqldelight/com/app/explorella/Database.sq
+         *
+         * The command ./gradlew :composeApp:generateSqlDelightInterface will then generate the type-safe code for use.
+         * For further abstraction, create a viewmodel. Such as e.g. BucketViewModel.
+         */
+
         val viewModel: BucketViewModel = BucketViewModel(
             sqlDriver = sqlDriver
         )
