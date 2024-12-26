@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqlDelight)
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 sqldelight {
@@ -48,6 +49,9 @@ kotlin {
 
             // Map
             implementation(libs.android.map)
+
+            // Ktor
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -70,11 +74,21 @@ kotlin {
             // Sql
             implementation(libs.sqlite.driver)
             implementation(libs.sqldelight)
+
+            // Ktor
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.json)
+            implementation(libs.ktor.client.serialization)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+
+            // Map
             implementation(libs.desktop.map)
+
+            // Ktor
+            implementation(libs.ktor.client.cio)
         }
     }
 }
