@@ -70,7 +70,7 @@ fun HomeScreen(
             rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
                 set("name", name)
             }
-            rootNavController.navigate(Routes.HomeDetail.route)
+//            rootNavController.navigate(Routes.HomeDetail.route)
         }) {
             Text(
                 text = "Settings",

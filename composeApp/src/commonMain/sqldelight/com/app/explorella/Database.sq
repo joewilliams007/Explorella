@@ -14,6 +14,9 @@ insertBucketItem:
 INSERT INTO BucketItem (title, description, priority, icon, latitude, longitude, timestamp)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
+selectBucketItem:
+SELECT * FROM BucketItem WHERE id=?;
+
 selectAllBucketItemsAsc:
 SELECT * FROM BucketItem ORDER BY timestamp ASC;
 
