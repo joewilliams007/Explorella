@@ -6,10 +6,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import app.cash.sqldelight.db.SqlDriver
+import com.app.explorella.BucketItem
 import com.app.explorella.navigation.Graph
 import com.app.explorella.navigation.Routes
 import com.app.explorella.screens.BucketListScreen
 import com.app.explorella.screens.HomeScreen
+import com.app.explorella.screens.ItemDetailScreen
 import com.app.explorella.screens.MapScreen
 import com.app.explorella.screens.TimelineScreen
 import com.app.explorella.screens.TodoScreen

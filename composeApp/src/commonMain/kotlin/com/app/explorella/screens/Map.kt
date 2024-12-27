@@ -53,6 +53,7 @@ import com.app.explorella.drawMarker
 import com.app.explorella.mapView
 import com.app.explorella.models.GeoPoint
 import com.app.explorella.models.MapState
+import com.app.explorella.navigation.Routes
 import com.app.explorella.res.Res
 import com.app.explorella.res.map_options_all
 import com.app.explorella.res.map_options_complete
@@ -136,14 +137,14 @@ fun MapScreen(
                 }
             }
 
-            pager(sqlDriver, paddingValues, bucket)
+            pager(rootNavController, paddingValues, bucket)
             listenMap(scaffoldState = scaffoldState, coroutineScope = coroutineScope, preferences = preferences)
         }
     }
 }
 
 @Composable
-fun pager(sqlDriver: SqlDriver, paddingValues: PaddingValues, bucket: BucketViewModel) {
+fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket: BucketViewModel) {
     bucket.getAllBucketEntriesDesc()
     val bucketEntries by bucket.bucketEntries.collectAsState()
     if (bucketEntries.isEmpty()) {
@@ -181,9 +182,10 @@ fun pager(sqlDriver: SqlDriver, paddingValues: PaddingValues, bucket: BucketView
                     )
                     Button(
                         onClick = {
-                            /**
-                             * TODO: Open page with more details.
-                             */
+                            rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                                set("itemId", bucketEntries[pageIndex].id)
+                            }
+                            rootNavController.navigate(Routes.ItemDetail.route)
                         },
                         modifier = Modifier
                             .align(Alignment.TopEnd)

@@ -30,6 +30,13 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
     }
 
     /**
+     * Get bucket entry.
+     */
+    fun getBucketEntry(id: Long): BucketItem {
+        return bucketQueries.selectBucketItem(id).executeAsOne()
+    }
+
+    /**
      * Get all bucket entries descending order.
      */
     fun getAllBucketEntriesDesc(): List<BucketItem> {

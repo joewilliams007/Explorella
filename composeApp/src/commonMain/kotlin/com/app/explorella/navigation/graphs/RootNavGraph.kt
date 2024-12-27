@@ -11,7 +11,7 @@ import androidx.navigation.compose.composable
 import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.navigation.Graph
 import com.app.explorella.navigation.Routes
-import com.app.explorella.screens.HomeDetailScreen
+import com.app.explorella.screens.ItemDetailScreen
 
 @Composable
 fun RootNavGraph(
@@ -28,11 +28,9 @@ fun RootNavGraph(
         popExitTransition = { fadeOut(animationSpec = tween(durationMillis = 50)) }
     ) {
         mainNavGraph(rootNavController = rootNavController, innerPadding = innerPadding, sqlDriver = sqlDriver)
-        composable(
-            route = Routes.HomeDetail.route,
-        ) {
-            rootNavController.previousBackStackEntry?.savedStateHandle?.get<String>("name")?.let { name ->
-                HomeDetailScreen(rootNavController = rootNavController, name = name)
+        composable(route = Routes.ItemDetail.route) {
+            rootNavController.previousBackStackEntry?.savedStateHandle?.get<Long>("itemId")?.let { id ->
+                ItemDetailScreen(rootNavController = rootNavController, paddingValues = innerPadding, sqlDriver = sqlDriver, id = id)
             }
         }
     }

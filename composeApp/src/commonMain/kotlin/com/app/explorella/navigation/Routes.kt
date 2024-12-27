@@ -1,8 +1,16 @@
 package com.app.explorella.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Star
 
 
 object Graph {
@@ -11,7 +19,7 @@ object Graph {
 
 sealed class Routes(var route: String) {
     data object Home : Routes("home")
-    data object HomeDetail : Routes("homeDetail")
+    data object ItemDetail : Routes("itemDetail")
 
     data object Timeline : Routes("timeline")
     data object BucketList : Routes("bucketList")
