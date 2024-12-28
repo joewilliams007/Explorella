@@ -98,3 +98,28 @@ UPDATE Preferences SET preference_value=? WHERE preference_key=?;
 
 getPreference:
 SELECT * FROM Preferences WHERE preference_key=?;
+
+-- j9 playground-------------
+
+-- new update-query
+updateBucketItem:
+UPDATE BucketItem
+SET
+  title = ?,
+  description = ?,
+  priority = ?,
+  icon = ?,
+  latitude = ?,
+  longitude = ?,
+  complete = ?,
+  timestamp = ?
+WHERE id = ?;
+
+-- todo for specific bucket
+selectTodosByBucket:
+SELECT *
+FROM Todo
+WHERE bucket_id = ?
+ORDER BY timestamp DESC;
+
+

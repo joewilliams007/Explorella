@@ -10,8 +10,6 @@ import com.app.explorella.BucketItem
 import com.app.explorella.navigation.Graph
 import com.app.explorella.navigation.Routes
 import com.app.explorella.screens.BucketListScreen
-import com.app.explorella.screens.HomeScreen
-import com.app.explorella.screens.ItemDetailScreen
 import com.app.explorella.screens.MapScreen
 import com.app.explorella.screens.TimelineScreen
 import com.app.explorella.screens.TodoScreen
@@ -22,12 +20,12 @@ fun NavGraphBuilder.mainNavGraph(
     sqlDriver: SqlDriver
 ) {
     navigation(
-        startDestination = Routes.Home.route,
+        startDestination = Routes.BucketList.route,
         route = Graph.NAVIGATION_BAR_SCREEN_GRAPH
     ) {
-        composable(route = Routes.Home.route) {
+        /* composable(route = Routes.Home.route) {
             HomeScreen(rootNavController = rootNavController, paddingValues = innerPadding)
-        }
+        } */
         composable(route = Routes.BucketList.route) {
             BucketListScreen(rootNavController = rootNavController, paddingValues = innerPadding, sqlDriver = sqlDriver)
         }
