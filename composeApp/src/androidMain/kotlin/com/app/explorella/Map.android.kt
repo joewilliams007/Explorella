@@ -114,7 +114,7 @@ actual fun drawMarker(bucketItem: BucketItem) {
     }
 
     if (context != null) {
-        val bitmap = getBitmapFromVectorDrawable(context, R.drawable.location_correct)
+        val bitmap = getBitmapFromVectorDrawable(context, if (bucketItem.complete.toInt() == 1) R.drawable.location_correct else R.drawable.location_wrong)
         marker.icon = BitmapDrawable(context.resources, bitmap)
     }
     mapView.overlays.add(marker)

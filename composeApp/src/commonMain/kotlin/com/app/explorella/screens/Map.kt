@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
@@ -80,7 +81,7 @@ fun MapScreen(
 
     val scaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
-
+    bucket.getAllBucketEntriesDesc()
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -145,13 +146,14 @@ fun MapScreen(
 
 @Composable
 fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket: BucketViewModel) {
-    bucket.getAllBucketEntriesDesc()
     val bucketEntries by bucket.bucketEntries.collectAsState()
     if (bucketEntries.isEmpty()) {
         return
     }
     displayMarkers(bucketEntries)
-    val pagerState = rememberPagerState(pageCount = { bucketEntries.size })
+    val pagerState = remember(bucketEntries.size) {
+        PagerState(pageCount = { bucketEntries.size })
+    }
 
     Row(
         modifier = Modifier
