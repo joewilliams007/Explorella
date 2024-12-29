@@ -98,108 +98,122 @@ fun DisplayPage(rootNavController: NavController?, sqlDriver: SqlDriver) {
             .groupBy { getYearFromTimestamp(it.timestamp!!) }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Sorting Button
-        IconButton(
-            onClick = {
-                isAscending.value = !isAscending.value
-                bucketEntries.value = bucketEntries.value
-                    .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
-            },
-            modifier = Modifier.padding(16.dp)
+    if (bucketEntries.value.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = if (isAscending.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                contentDescription = "Sort Order",
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
+            Text(
+                text = "No Items Completed.",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
         }
+    } else {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Sorting Button
+            IconButton(
+                onClick = {
+                    isAscending.value = !isAscending.value
+                    bucketEntries.value = bucketEntries.value
+                        .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+                },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = if (isAscending.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Sort Order",
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
 
-        // Timeline Layout
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Iterate over the grouped entries
-            groupedEntries.forEach { (year, entries) ->
-                // Year Header
-                item {
-                    Text(
-                        text = "$year",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
+            // Timeline Layout
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Iterate over the grouped entries
+                groupedEntries.forEach { (year, entries) ->
+                    // Year Header
+                    item {
+                        Text(
+                            text = "$year",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
 
-                // Display entries for this year
-                items(entries) { entry ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Timeline: Line and Point (Dotted line)
-                        Box(
-                            modifier = Modifier
-                                .width(40.dp) // Width for the timeline line
-                                .fillMaxHeight(), // Ensure Box takes up full height
-                            contentAlignment = Alignment.TopCenter
+                    // Display entries for this year
+                    items(entries) { entry ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(
+                            // Timeline: Line and Point (Dotted line)
+                            Box(
                                 modifier = Modifier
-                                    .fillMaxHeight()
+                                    .width(40.dp) // Width for the timeline line
+                                    .fillMaxHeight(), // Ensure Box takes up full height
+                                contentAlignment = Alignment.TopCenter
                             ) {
-                                // Add dots to represent points in the timeline
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Timeline Point",
-                                    modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-
-                        // Card Content
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 8.dp),
-                            elevation = CardDefaults.cardElevation(4.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = entry.title,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = formatTimestamp(entry.timestamp!!),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                ) {
+                                    // Add dots to represent points in the timeline
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = "Timeline Point",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
-                                IconButton(onClick = {
-                                    rootNavController?.currentBackStackEntry?.savedStateHandle?.apply {
-                                        set("itemId", entry.id)
+                            }
+
+                            // Card Content
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 8.dp),
+                                elevation = CardDefaults.cardElevation(4.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = entry.title,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = formatTimestamp(entry.timestamp!!),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
-                                    rootNavController?.navigate(Routes.ItemDetail.route)
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.MoreVert,
-                                        contentDescription = "More Options",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    IconButton(onClick = {
+                                        rootNavController?.currentBackStackEntry?.savedStateHandle?.apply {
+                                            set("itemId", entry.id)
+                                        }
+                                        rootNavController?.navigate(Routes.ItemDetail.route)
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "More Options",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
                             }
                         }
