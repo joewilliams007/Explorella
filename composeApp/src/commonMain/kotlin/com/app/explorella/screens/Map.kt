@@ -239,11 +239,20 @@ fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket
     displayMarkers(bucketEntries)
     val pagerState = rememberPagerState(pageCount = { bucketEntries.size })
     val coroutineScope = rememberCoroutineScope()
-    Row(
-        modifier = Modifier
+
+    val modifier = if (isDesktop()) {
+        Modifier
             .fillMaxWidth()
             .padding(paddingValues = paddingValues)
-            .zIndex(1f),
+            .zIndex(1f)
+    } else {
+        Modifier
+            .fillMaxSize()
+            .padding(paddingValues = paddingValues)
+            .zIndex(1f)
+    }
+    Row(
+        modifier = modifier,
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = if (isDesktop()) Arrangement.SpaceBetween else Arrangement.Start
     ) {
