@@ -122,4 +122,12 @@ FROM Todo
 WHERE bucket_id = ?
 ORDER BY timestamp DESC;
 
+-- ToDo löschen
+deleteTodo:
+DELETE FROM Todo
+WHERE id = ?;
 
+setBucketComplete:
+UPDATE BucketItem
+SET complete = ?
+WHERE id = ?;

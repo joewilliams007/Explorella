@@ -7,6 +7,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -15,6 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.clickable
+
 import androidx.navigation.NavController
 import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.BucketItem
@@ -40,11 +46,10 @@ fun ItemDetailScreen(
     // Lokaler State für neues ToDo
     var newTodoText by remember { mutableStateOf("") }
 
-    // Todos laden, wenn der Screen angezeigt wird
-    LaunchedEffect(key1 = id) {
-        println("Loading todos for bucket: $id")
-        bucketViewModel.loadTodosForBucket(id)
-    }
+    // Lokaler State für Checkbox
+    var isComplete by remember { mutableStateOf(item.complete == 1L) }
+
+    bucketViewModel.loadTodosForBucket(id)
 
     Column(
         modifier = Modifier
@@ -54,12 +59,36 @@ fun ItemDetailScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Titel
-        Text(
-            text = item.title,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
+        // Titel mit Checkbox
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = item.title,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+            Checkbox(
+                checked = isComplete,
+                onCheckedChange = {
+                    isComplete = it
+                    bucketViewModel.updateBucketEntry(
+                        id = item.id,
+                        title = item.title,
+                        description = item.description,
+                        priority = item.priority ?: 0,
+                        icon = item.icon,
+                        latitude = item.latitude ?: 0.0,
+                        longitude = item.longitude ?: 0.0,
+                        complete = if (it) 1 else 0,
+                        timestamp = System.currentTimeMillis()
+                    )
+                }
+            )
+        }
 
         // Beschreibung
         OutlinedTextField(
@@ -125,14 +154,24 @@ fun ItemDetailScreen(
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             println("Current TodoList: $todoList") // Debugging
             items(todoList) { todo ->
-                TodoItemCard(todo.task)
+                TodoItemCard(
+                    task = todo.task,
+                    onDelete = {
+                        bucketViewModel.deleteTodo(todo.id)
+                    },
+                    onCheckedChange = { isChecked ->
+                        // TODO: Implement checkbox state management
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun TodoItemCard(task: String) {
+fun TodoItemCard(task: String, onDelete: () -> Unit, onCheckedChange: (Boolean) -> Unit) {
+    var isChecked by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -146,14 +185,24 @@ fun TodoItemCard(task: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = {
+                    isChecked = it
+                    onCheckedChange(it)
+                }
+            )
             Text(
                 text = task,
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
             )
-            Checkbox(
-                checked = false, // Placeholder; should be bound to a state
-                onCheckedChange = { /* TODO: Handle check/uncheck */ }
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = "Delete Icon",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onDelete() }
             )
         }
     }

@@ -34,6 +34,14 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
         getAllBucketEntriesDesc()
     }
 
+    private var currentBucketId: Long = -1L
+
+    fun currentBucket(bucketId: Long) {
+        currentBucketId = bucketId
+        val todos = bucketQueries.selectTodosByBucket(bucketId).executeAsList()
+        _todoItems.value = todos
+    }
+
     /** NEW !
      * Update an existing bucket entry by id.
      * Make sure you have a matching SQL statement in your .sq file (e.g. 'updateBucketItem').
@@ -161,5 +169,18 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
         )
         loadTodosForBucket(bucketId)
     }
+
+    fun deleteTodo(id: Long) {
+        bucketQueries.deleteTodo(id)
+        // Liste der Todos nach dem Löschen aktualisieren
+        loadTodosForBucket(currentBucketId) // `currentBucketId` sollte der aktuell geladene Bucket sein
+    }
+
+    fun setBucketComplete(id: Long, complete: Boolean) {
+        bucketQueries.setBucketComplete(if (complete) 1 else 0, id)
+        // Optional: Lade die Bucket-Einträge erneut, falls nötig
+    }
+
+
 
 }
