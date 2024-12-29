@@ -260,6 +260,16 @@ fun DropDownMenu(
             }
         )
         DropdownMenuItem(
+            text = { Text("Mark Incomplete") },
+            onClick = {
+                expanded.value = false
+                bucket.setBucketItemComplete(0, id)
+                bucket.getCompleteBucketEntries()
+                bucketEntries.value = bucket.getCompleteBucketEntries()
+                    .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+            }
+        )
+        DropdownMenuItem(
             text = { Text("Delete") },
             onClick = {
                 expanded.value = false
