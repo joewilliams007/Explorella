@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.automirrored.outlined.List
 
 
 object Graph {
@@ -25,6 +26,7 @@ sealed class Routes(var route: String) {
     data object BucketList : Routes("bucketList")
     data object Todo : Routes("toDo")
     data object Map : Routes("map")
+    data object LocationSelector : Routes("locationSelector")
 }
 
 val navigationItemsLists = listOf(
@@ -58,4 +60,10 @@ val navigationItemsLists = listOf(
         title = "Todo",
         route = Routes.Todo.route,
     ),
+    NavigationItem(
+        unSelectedIcon = Icons.AutoMirrored.Outlined.List,
+        selectedIcon = Icons.AutoMirrored.Outlined.List,
+        title = "LocationSelector",
+        route = Routes.LocationSelector.route
+    )
 )
