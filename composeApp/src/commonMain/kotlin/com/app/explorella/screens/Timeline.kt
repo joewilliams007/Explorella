@@ -84,63 +84,90 @@ fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
             .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
     }
 
-    Column {
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Sorting Button
         IconButton(
             onClick = {
                 isAscending.value = !isAscending.value
                 bucketEntries.value = bucketEntries.value
                     .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
-            }
+            },
+            modifier = Modifier.padding(16.dp)
         ) {
             Icon(
                 imageVector = if (isAscending.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                 contentDescription = "Sort Order",
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
         }
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+
+        // LazyColumn for Items
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             items(bucketEntries.value) { entry ->
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Icon Description",
-                        modifier = Modifier
-                            .size(24.dp)
-                            .padding(end = 8.dp),
-                        tint = Color.Green
-                    )
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = entry.title,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        // Display formatted timestamp
-                        Text(
-                            text = formatTimestamp(entry.timestamp!!),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    IconButton(
-                        modifier = Modifier
-                            .padding(end = 8.dp),
-                        onClick = {
+                // Individual Item Card
+                androidx.compose.material3.Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            // Navigate to detail screen with the item ID
                             rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
                                 set("itemId", entry.id)
                             }
                             rootNavController.navigate(Routes.ItemDetail.route)
-                        }) {
+                        },
+                    elevation = androidx.compose.material3.CardDefaults.cardElevation(4.dp) // Fix applied here
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Timeline Icon
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Icon Description",
+                            imageVector = Icons.Default.CheckCircle, // Replace with a timeline-related icon
+                            contentDescription = "Timeline Icon",
                             modifier = Modifier
-                                .size(24.dp)
-                                .padding(end = 8.dp),
+                                .size(32.dp)
+                                .padding(end = 16.dp),
+                            tint = MaterialTheme.colorScheme.secondary
                         )
+
+                        // Title and Timestamp
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = entry.title,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = formatTimestamp(entry.timestamp!!),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        // More Options Icon
+                        IconButton(
+                            onClick = {
+                                rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                                    set("itemId", entry.id)
+                                }
+                                rootNavController.navigate(Routes.ItemDetail.route)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "More Options",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
