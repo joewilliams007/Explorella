@@ -88,7 +88,7 @@ fun DisplayPage(rootNavController: NavController?, sqlDriver: SqlDriver) {
 
     // Fetch and sort data
     LaunchedEffect(Unit) {
-        bucketEntries.value = bucket.getIncompleteBucketEntries()
+        bucketEntries.value = bucket.getCompleteBucketEntries()
             .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
     }
 
