@@ -11,10 +11,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -34,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.BucketItem
@@ -50,6 +56,7 @@ import com.app.explorella.database.PreferencesViewModel.Companion.MAP_LOCATION_L
 import com.app.explorella.database.PreferencesViewModel.Companion.MAP_ZOOM_LEVEL
 import com.app.explorella.database.PreferencesViewModel.Companion.MAP_ZOOM_LEVEL_DEFAULT
 import com.app.explorella.drawMarker
+import com.app.explorella.isDesktop
 import com.app.explorella.mapView
 import com.app.explorella.models.GeoPoint
 import com.app.explorella.models.MapState
@@ -82,29 +89,27 @@ fun MapScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-        ) {
-            // Restore map state.
-            mapView(MapState(GeoPoint(
-                preferences.getPreference(MAP_LOCATION_LATITUDE,MAP_LOCATION_LATITUDE_DEFAULT).toDouble(),
-                preferences.getPreference(MAP_LOCATION_LONGITUDE,MAP_LOCATION_LONGITUDE_DEFAULT).toDouble()),
-                preferences.getPreference(MAP_ZOOM_LEVEL,MAP_ZOOM_LEVEL_DEFAULT).toDouble()))
 
-            var selectedIndex by remember { mutableStateOf(0) }
-            val options = listOf(stringResource(Res.string.map_options_all), stringResource(Res.string.map_options_complete), stringResource(Res.string.map_options_incomplete))
+        /**
+         * The UI needs to be different for desktop, as the current Java Swing implementation does not support overlays.
+         * Due to this, for desktop, the overlays are on top or below the map.
+         */
+        if (isDesktop()) {
             SingleChoiceSegmentedButtonRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.TopCenter)
                     .padding(8.dp)
             ) {
+                val options = listOf(
+                    stringResource(Res.string.map_options_all),
+                    stringResource(Res.string.map_options_complete),
+                    stringResource(Res.string.map_options_incomplete)
+                )
+                var selectedIndex by remember { mutableStateOf(0) }
                 options.forEachIndexed { index, label ->
                     SegmentedButton(
                         shape = SegmentedButtonDefaults.itemShape(
@@ -115,18 +120,10 @@ fun MapScreen(
                             selectedIndex = index
                             clearMarkers()
                             when (selectedIndex) {
-                            0 -> {
-                                bucket.getAllBucketEntriesDesc()
-                            }
-                                1 -> {
-                                    bucket.getCompleteBucketEntries()
-                                }
-                                2 -> {
-                                    bucket.getIncompleteBucketEntries()
-                                }
-                                else -> {
-                                    bucket.getAllBucketEntriesDesc()
-                                }
+                                0 -> bucket.getAllBucketEntriesDesc()
+                                1 -> bucket.getCompleteBucketEntries()
+                                2 -> bucket.getIncompleteBucketEntries()
+                                else -> bucket.getAllBucketEntriesDesc()
                             }
                             displayMarkers(bucket.bucketEntries.value)
                         },
@@ -137,10 +134,99 @@ fun MapScreen(
                 }
             }
 
-            pager(rootNavController, paddingValues, bucket)
-            listenMap(scaffoldState = scaffoldState, coroutineScope = coroutineScope, preferences = preferences)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                mapView(
+                    MapState(
+                        GeoPoint(
+                            preferences.getPreference(MAP_LOCATION_LATITUDE, MAP_LOCATION_LATITUDE_DEFAULT).toDouble(),
+                            preferences.getPreference(MAP_LOCATION_LONGITUDE, MAP_LOCATION_LONGITUDE_DEFAULT).toDouble()
+                        ),
+                        preferences.getPreference(MAP_ZOOM_LEVEL, MAP_ZOOM_LEVEL_DEFAULT).toDouble()
+                    )
+                )
+
+                listenMap(
+                    scaffoldState = scaffoldState,
+                    coroutineScope = coroutineScope,
+                    preferences = preferences
+                )
+            }
+
+            pager(
+                rootNavController = rootNavController,
+                paddingValues = paddingValues,
+                bucket = bucket,
+            )
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                mapView(
+                    MapState(
+                        GeoPoint(
+                            preferences.getPreference(MAP_LOCATION_LATITUDE, MAP_LOCATION_LATITUDE_DEFAULT).toDouble(),
+                            preferences.getPreference(MAP_LOCATION_LONGITUDE, MAP_LOCATION_LONGITUDE_DEFAULT).toDouble()
+                        ),
+                        preferences.getPreference(MAP_ZOOM_LEVEL, MAP_ZOOM_LEVEL_DEFAULT).toDouble()
+                    )
+                )
+
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                        .padding(8.dp)
+                        .zIndex(1f)
+                ) {
+                    val options = listOf(
+                        stringResource(Res.string.map_options_all),
+                        stringResource(Res.string.map_options_complete),
+                        stringResource(Res.string.map_options_incomplete)
+                    )
+                    var selectedIndex by remember { mutableStateOf(0) }
+                    options.forEachIndexed { index, label ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = options.size
+                            ),
+                            onClick = {
+                                selectedIndex = index
+                                clearMarkers()
+                                when (selectedIndex) {
+                                    0 -> bucket.getAllBucketEntriesDesc()
+                                    1 -> bucket.getCompleteBucketEntries()
+                                    2 -> bucket.getIncompleteBucketEntries()
+                                    else -> bucket.getAllBucketEntriesDesc()
+                                }
+                                displayMarkers(bucket.bucketEntries.value)
+                            },
+                            selected = index == selectedIndex
+                        ) {
+                            Text(label)
+                        }
+                    }
+                }
+
+                pager(
+                    rootNavController = rootNavController,
+                    paddingValues = paddingValues,
+                    bucket = bucket,
+                )
+
+                listenMap(
+                    scaffoldState = scaffoldState,
+                    coroutineScope = coroutineScope,
+                    preferences = preferences
+                )
+            }
         }
     }
+
 }
 
 @Composable
@@ -152,18 +238,37 @@ fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket
     }
     displayMarkers(bucketEntries)
     val pagerState = rememberPagerState(pageCount = { bucketEntries.size })
-
+    val coroutineScope = rememberCoroutineScope()
     Row(
         modifier = Modifier
-            .fillMaxSize().padding(paddingValues = paddingValues),
-        verticalAlignment = Alignment.Bottom
+            .fillMaxWidth()
+            .padding(paddingValues = paddingValues)
+            .zIndex(1f),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = if (isDesktop()) Arrangement.SpaceBetween else Arrangement.Start
     ) {
+        // Since swiping is not native for desktop, we add buttons.
+        if (isDesktop()) {
+            IconButton(
+                onClick = {
+                    if (pagerState.currentPage > 0) {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    }
+                }
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous")
+            }
+        }
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .padding(8.dp)
                 .height(100.dp)
-                .fillMaxWidth()
+                .weight(1f)
+                .zIndex(1f)
         ) { pageIndex ->
             Card(
                 modifier = Modifier
@@ -196,18 +301,34 @@ fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket
                 }
             }
         }
+        // Since swiping is not native for desktop, we add buttons.
+        if (isDesktop()) {
+            IconButton(
+                onClick = {
+                    if (pagerState.currentPage < bucketEntries.size - 1) {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    }
+                }
+            ) {
+                Icon(Icons.Default.ArrowForward, contentDescription = "Next")
+            }
+        }
+
         var firstIgnored = false
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
-            .collect { pageIndex ->
-                if (!firstIgnored) {
-                    firstIgnored = true
-                } else {
-                    bucketEntries[pageIndex].zoom()
+                .collect { pageIndex ->
+                    if (!firstIgnored) {
+                        firstIgnored = true
+                    } else {
+                        bucketEntries[pageIndex].zoom()
+                    }
                 }
-            }
         }
     }
+
 }
 
 /**
