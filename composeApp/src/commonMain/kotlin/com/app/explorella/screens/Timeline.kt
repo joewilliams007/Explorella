@@ -1,5 +1,7 @@
 package com.app.explorella.screens
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,11 +9,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -19,6 +23,8 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -74,14 +81,21 @@ fun TimelineScreen(
 }
 
 @Composable
-fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
+fun DisplayPage(rootNavController: NavController?, sqlDriver: SqlDriver) {
     val bucket = remember { BucketViewModel(sqlDriver = sqlDriver) }
     val bucketEntries = remember { mutableStateOf(emptyList<BucketItem>()) }
     val isAscending = rememberSaveable { mutableStateOf(true) }
 
+    // Fetch and sort data
     LaunchedEffect(Unit) {
         bucketEntries.value = bucket.getIncompleteBucketEntries()
             .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+    }
+
+    // Group entries by Year
+    val groupedEntries = remember(bucketEntries.value) {
+        bucketEntries.value
+            .groupBy { getYearFromTimestamp(it.timestamp!!) }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -102,71 +116,92 @@ fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
             )
         }
 
-        // LazyColumn for Items
+        // Timeline Layout
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(bucketEntries.value) { entry ->
-                // Individual Item Card
-                androidx.compose.material3.Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            // Navigate to detail screen with the item ID
-                            rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
-                                set("itemId", entry.id)
-                            }
-                            rootNavController.navigate(Routes.ItemDetail.route)
-                        },
-                    elevation = androidx.compose.material3.CardDefaults.cardElevation(4.dp) // Fix applied here
-                ) {
+            // Iterate over the grouped entries
+            groupedEntries.forEach { (year, entries) ->
+                // Year Header
+                item {
+                    Text(
+                        text = "$year",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                // Display entries for this year
+                items(entries) { entry ->
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Timeline Icon
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle, // Replace with a timeline-related icon
-                            contentDescription = "Timeline Icon",
+                        // Timeline: Line and Point (Dotted line)
+                        Box(
                             modifier = Modifier
-                                .size(32.dp)
-                                .padding(end = 16.dp),
-                            tint = MaterialTheme.colorScheme.secondary
-                        )
-
-                        // Title and Timestamp
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = entry.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = formatTimestamp(entry.timestamp!!),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                                .width(40.dp) // Width for the timeline line
+                                .fillMaxHeight(), // Ensure Box takes up full height
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                            ) {
+                                // Add dots to represent points in the timeline
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Timeline Point",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
 
-                        // More Options Icon
-                        IconButton(
-                            onClick = {
-                                rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
-                                    set("itemId", entry.id)
-                                }
-                                rootNavController.navigate(Routes.ItemDetail.route)
-                            }
+                        // Card Content
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 8.dp),
+                            elevation = CardDefaults.cardElevation(4.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "More Options",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = entry.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = formatTimestamp(entry.timestamp!!),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                IconButton(onClick = {
+                                    rootNavController?.currentBackStackEntry?.savedStateHandle?.apply {
+                                        set("itemId", entry.id)
+                                    }
+                                    rootNavController?.navigate(Routes.ItemDetail.route)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = "More Options",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -174,6 +209,15 @@ fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
         }
     }
 }
+
+// Helper function to get the year from the timestamp
+fun getYearFromTimestamp(timestamp: Long): Int {
+    val formatter = DateTimeFormatter.ofPattern("yyyy")
+        .withZone(ZoneId.systemDefault())
+    return formatter.format(Instant.ofEpochMilli(timestamp)).toInt()
+}
+
+// Timestamp Formatter
 fun formatTimestamp(timestamp: Long): String {
     val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
         .withZone(ZoneId.systemDefault())
