@@ -73,7 +73,7 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
     }
 
     fun setBucketItemComplete(complete: Long, id: Long) {
-        bucketQueries.setBucketItemComplete(complete, id)
+        bucketQueries.setBucketItemComplete(complete, id, System.currentTimeMillis())
         getAllBucketEntriesDesc()
     }
 }
