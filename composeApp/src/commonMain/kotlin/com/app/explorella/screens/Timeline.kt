@@ -5,13 +5,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -19,14 +29,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.BucketItem
 import com.app.explorella.database.BucketViewModel
+import com.app.explorella.navigation.Routes
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,15 +69,15 @@ fun TimelineScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        DisplayPage(sqlDriver)
+        DisplayPage(rootNavController, sqlDriver)
     }
 }
 
 @Composable
-fun DisplayPage(sqlDriver: SqlDriver) {
+fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
     val bucket = remember { BucketViewModel(sqlDriver = sqlDriver) }
     val bucketEntries = remember { mutableStateOf(emptyList<BucketItem>()) }
-    val isAscending = remember { mutableStateOf(true) }
+    val isAscending = rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         bucketEntries.value = bucket.getIncompleteBucketEntries()
@@ -68,23 +85,70 @@ fun DisplayPage(sqlDriver: SqlDriver) {
     }
 
     Column {
-        Text(
-            text = if (isAscending.value) "Sort: Ascending" else "Sort: Descending",
-            modifier = Modifier
-                .padding(16.dp)
-                .clickable {
-                    isAscending.value = !isAscending.value
-                    bucketEntries.value = bucketEntries.value
-                        .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
-                }
-        )
+        IconButton(
+            onClick = {
+                isAscending.value = !isAscending.value
+                bucketEntries.value = bucketEntries.value
+                    .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+            }
+        ) {
+            Icon(
+                imageVector = if (isAscending.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = "Sort Order",
+                modifier = Modifier.size(24.dp)
+            )
+        }
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(bucketEntries.value) { entry ->
-                Text(
-                    text = entry.title,
-                    modifier = Modifier.padding(16.dp)
-                )
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Icon Description",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(end = 8.dp),
+                        tint = Color.Green
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = entry.title,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        // Display formatted timestamp
+                        Text(
+                            text = formatTimestamp(entry.timestamp!!),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    IconButton(
+                        modifier = Modifier
+                            .padding(end = 8.dp),
+                        onClick = {
+                            rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                                set("itemId", entry.id)
+                            }
+                            rootNavController.navigate(Routes.ItemDetail.route)
+                        }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Icon Description",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(end = 8.dp),
+                        )
+                    }
+                }
             }
         }
     }
+}
+fun formatTimestamp(timestamp: Long): String {
+    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
+        .withZone(ZoneId.systemDefault())
+    return formatter.format(Instant.ofEpochMilli(timestamp))
 }
