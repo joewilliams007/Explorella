@@ -35,6 +35,9 @@ SELECT * FROM BucketItem WHERE complete=0 ORDER BY timestamp DESC;
 setBucketItemComplete:
 UPDATE BucketItem SET complete=?, timestamp=? WHERE id=?;
 
+deleteBucketItem:
+DELETE FROM BucketItem WHERE id=?;
+
 CREATE TABLE IF NOT EXISTS Notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     bucket_id INTEGER,

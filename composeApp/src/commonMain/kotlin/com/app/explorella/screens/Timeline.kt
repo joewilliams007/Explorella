@@ -16,36 +16,37 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.BucketItem
 import com.app.explorella.database.BucketViewModel
+import com.app.explorella.navigation.Routes
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -84,7 +85,6 @@ fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
     val bucket = remember { BucketViewModel(sqlDriver = sqlDriver) }
     val bucketEntries = remember { mutableStateOf(emptyList<BucketItem>()) }
     val isAscending = rememberSaveable { mutableStateOf(true) }
-    val focusRequester = remember { FocusRequester() }
 
     // Fetch and sort data
     LaunchedEffect(Unit) {
@@ -168,7 +168,7 @@ fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
-                            TimeCard(rootNavController, entry, focusRequester)
+                            TimeCard(rootNavController, entry, bucket, bucketEntries, isAscending)
                         }
                     }
                 }
@@ -179,7 +179,13 @@ fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimeCard(rootNavController: NavController, entry: BucketItem, focusRequester: FocusRequester) {
+fun TimeCard(
+    rootNavController: NavController,
+    entry: BucketItem,
+    bucket: BucketViewModel,
+    bucketEntries: MutableState<List<BucketItem>>,
+    isAscending: MutableState<Boolean>
+) {
     // Card Content
     Card(
         modifier = Modifier
@@ -209,15 +215,22 @@ fun TimeCard(rootNavController: NavController, entry: BucketItem, focusRequester
             }
 
             // Dropdown Menu for More Options
-            DropDownMenu(entry.id)
+            DropDownMenu(rootNavController, entry.id, bucket, bucketEntries, isAscending)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropDownMenu(id: Long) {
+fun DropDownMenu(
+    rootNavController: NavController,
+    id: Long,
+    bucket: BucketViewModel,
+    bucketEntries: MutableState<List<BucketItem>>,
+    isAscending: MutableState<Boolean>,
+) {
     val expanded = rememberSaveable { mutableStateOf(false) }
+    val openAlertDialog = remember { mutableStateOf(false) }
 
     IconButton(
         onClick = {
@@ -240,18 +253,55 @@ fun DropDownMenu(id: Long) {
             text = { Text("Details") },
             onClick = {
                 expanded.value = false
-            }
-        )
-        DropdownMenuItem(
-            text = { Text("Add Picture") },
-            onClick = {
-                expanded.value = false
+                rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                    set("itemId", id)
+                }
+                rootNavController.navigate(Routes.ItemDetail.route)
             }
         )
         DropdownMenuItem(
             text = { Text("Delete") },
             onClick = {
                 expanded.value = false
+                openAlertDialog.value = true
+            }
+        )
+    }
+    if (openAlertDialog.value) {
+        AlertDialog(
+            icon = {
+                Icon(Icons.Default.Delete, contentDescription = "Example Icon")
+            },
+            title = {
+                Text(text = "Delete")
+            },
+            text = {
+                Text(text = "Are you sure you want to delete this Item?")
+            },
+            onDismissRequest = {
+                openAlertDialog.value = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        openAlertDialog.value = false
+                        bucket.deleteBucketItem(id)
+                        bucket.getCompleteBucketEntries()
+                        bucketEntries.value = bucket.getCompleteBucketEntries()
+                            .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        openAlertDialog.value = false
+                    }
+                ) {
+                    Text("Dismiss")
+                }
             }
         )
     }
