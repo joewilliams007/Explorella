@@ -33,7 +33,7 @@ selectIncompleteBucketItems:
 SELECT * FROM BucketItem WHERE complete=0 ORDER BY timestamp DESC;
 
 setBucketItemComplete:
-UPDATE BucketItem SET complete=? WHERE id=?;
+UPDATE BucketItem SET complete=?, timestamp=? WHERE id=?;
 
 CREATE TABLE IF NOT EXISTS Notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
