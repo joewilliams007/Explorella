@@ -108,8 +108,13 @@ fun ViewBucketScreen(
                         items(bucketList) { e ->
                             ElevatedCard(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
+                                    .fillMaxWidth().clickable {
+                                        rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                                            set("itemId", e.id)
+                                        }
+                                        rootNavController.navigate(Routes.ItemDetail.route)},
                                 shape = RoundedCornerShape(12.dp)
+
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -137,17 +142,12 @@ fun ViewBucketScreen(
                                     )
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.weight(1f).clickable {
-                                            rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
-                                                set("itemId", e.id)
-                                            }
-                                            rootNavController.navigate(Routes.ItemDetail.route)
-                                        }
                                     ) {
                                         Text(
                                             text = e.title,
                                             style = MaterialTheme.typography.titleMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.weight(1f)
                                         )
                                     }
                                     Icon(
