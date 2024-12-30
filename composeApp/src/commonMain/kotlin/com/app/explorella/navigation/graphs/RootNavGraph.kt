@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.navigation.Graph
 import com.app.explorella.navigation.Routes
+import com.app.explorella.screens.AddBucketScreen
 import com.app.explorella.screens.ItemDetailScreen
 import com.app.explorella.screens.LocationSelectorScreen
 
@@ -48,6 +49,13 @@ fun RootNavGraph(
                         id = id
                     )
                 }
+        }
+        composable(route = Routes.AddBuckets.route) {
+            AddBucketScreen(
+                rootNavController = rootNavController,
+                paddingValues = innerPadding,
+                sqlDriver = sqlDriver,
+            )
         }
         composable(route = Routes.LocationSelector.route) {
             rootNavController.previousBackStackEntry?.savedStateHandle?.get<String>("locationQuery")

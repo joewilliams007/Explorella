@@ -20,12 +20,9 @@ fun NavGraphBuilder.mainNavGraph(
     sqlDriver: SqlDriver
 ) {
     navigation(
-        startDestination = Routes.BucketList.route,
+        startDestination = Routes.Map.route,
         route = Graph.NAVIGATION_BAR_SCREEN_GRAPH
     ) {
-        composable(route = Routes.BucketList.route) {
-            BucketListScreen(rootNavController = rootNavController, paddingValues = innerPadding, sqlDriver = sqlDriver)
-        }
         composable(route = Routes.ViewBuckets.route) {
             ViewBucketScreen(
                 rootNavController = rootNavController,
