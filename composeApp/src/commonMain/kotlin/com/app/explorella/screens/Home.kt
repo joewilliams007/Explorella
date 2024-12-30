@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -26,11 +29,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import app.cash.sqldelight.db.SqlDriver
+import com.app.explorella.models.GeoPoint
 import com.app.explorella.navigation.Routes
 import com.app.explorella.overpass.Overpass
+import com.app.explorella.zoomMap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,30 +63,114 @@ fun HomeScreen(
             }
         )
         Spacer(modifier = Modifier.height(20.dp))
+        var locationQuery: String = ""
         TextField(
+            singleLine = true,
             value = name,
             onValueChange = {
                 name = it
+                locationQuery = it
             },
             label = {
                 Text(
-                    text = "Enter anything"
+                    text = "Where would you like to travel? \uD83E\uDDF3"
                 )
-            })
+            },
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                        set("locationQuery", locationQuery)
+                    }
+                    rootNavController.navigate(Routes.LocationSelector.route)
+                }
+            )
+        )
+        Button(
+            onClick = {
+                rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                    set("locationQuery", locationQuery)
+                }
+                rootNavController.navigate(Routes.LocationSelector.route)
+            }
+        ) {
+            Text(
+                text = "Go!"
+            )
+        }
+
+        //Settings Button. Entfernt weil kein use? ~LR
+        //falls settings existieren: lieber FAB mit settings icon
+        /*
         Button(onClick = {
             rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
                 set("name", name)
             }
-//            rootNavController.navigate(Routes.HomeDetail.route)
+        //rootNavController.navigate(Routes.HomeDetail.route)
         }) {
             Text(
                 text = "Settings",
                 fontSize = 20.sp
             )
-        }
+        }*/
         Spacer(modifier = Modifier.height(20.dp))
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LocationSelectorScreen(
+    rootNavController: NavController,
+    paddingValues: PaddingValues,
+    sqlDriver: SqlDriver,
+    locationQuery: String
+) {
+    var possibleTargets: List<Overpass.Element>? = null
+    LaunchedEffect(Unit) {
+        possibleTargets = Overpass().searchLocations(locationQuery)
+    }
+
+    TopAppBar(
+        title = {
+            Text(
+                text = "Bucket list",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+    )
+    Spacer(modifier = Modifier.height(20.dp))
+
+
+    Text("hallo LocationSelectorScreen")
+
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(paddingValues),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        items(possibleTargets!!) { e ->
+            Button(
+                onClick = {
+                    rootNavController.navigate(Routes.Map.route)
+                    zoomMap(
+                        GeoPoint(
+                            latitude = e.lat,
+                            longitude = e.lon
+                        )
+                    )
+                }
+            ) {
+                Text(e.tags["name"].toString())
+            }
+        }
+    }
+}
+
+//  |
+//  |   wird das gebraucht? no use und falsche signatur der methode
+//  V
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

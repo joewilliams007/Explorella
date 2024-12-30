@@ -33,7 +33,7 @@ import com.app.explorella.database.BucketViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BucketListScreen(
+fun AddBucketScreen(
     rootNavController: NavController,
     paddingValues: PaddingValues,
     sqlDriver: SqlDriver

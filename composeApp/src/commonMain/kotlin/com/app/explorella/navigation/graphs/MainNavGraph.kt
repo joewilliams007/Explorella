@@ -6,13 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import app.cash.sqldelight.db.SqlDriver
-import com.app.explorella.BucketItem
 import com.app.explorella.navigation.Graph
 import com.app.explorella.navigation.Routes
-import com.app.explorella.screens.BucketListScreen
+import com.app.explorella.screens.HomeScreen
 import com.app.explorella.screens.MapScreen
 import com.app.explorella.screens.TimelineScreen
 import com.app.explorella.screens.TodoScreen
+import com.app.explorella.screens.ViewBucketScreen
 
 fun NavGraphBuilder.mainNavGraph(
     rootNavController: NavHostController,
@@ -23,21 +23,36 @@ fun NavGraphBuilder.mainNavGraph(
         startDestination = Routes.BucketList.route,
         route = Graph.NAVIGATION_BAR_SCREEN_GRAPH
     ) {
-        /* composable(route = Routes.Home.route) {
-            HomeScreen(rootNavController = rootNavController, paddingValues = innerPadding)
-        } */
         composable(route = Routes.BucketList.route) {
             BucketListScreen(rootNavController = rootNavController, paddingValues = innerPadding, sqlDriver = sqlDriver)
         }
+        composable(route = Routes.ViewBuckets.route) {
+            ViewBucketScreen(
+                rootNavController = rootNavController,
+                paddingValues = innerPadding,
+                sqlDriver = sqlDriver
+            )
+        }
         composable(route = Routes.Timeline.route) {
-            TimelineScreen(rootNavController = rootNavController, paddingValues = innerPadding, sqlDriver = sqlDriver)
+            TimelineScreen(
+                rootNavController = rootNavController,
+                paddingValues = innerPadding,
+                sqlDriver = sqlDriver
+            )
         }
         composable(route = Routes.Map.route) {
-            MapScreen(rootNavController = rootNavController, paddingValues = innerPadding, sqlDriver = sqlDriver)
+            MapScreen(
+                rootNavController = rootNavController,
+                paddingValues = innerPadding,
+                sqlDriver = sqlDriver
+            )
         }
         composable(route = Routes.Todo.route) {
-            TodoScreen(rootNavController = rootNavController, paddingValues = innerPadding, sqlDriver = sqlDriver)
+            TodoScreen(
+                rootNavController = rootNavController,
+                paddingValues = innerPadding,
+                sqlDriver = sqlDriver
+            )
         }
     }
-
 }
