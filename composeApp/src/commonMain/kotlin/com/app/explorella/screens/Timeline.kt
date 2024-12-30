@@ -189,6 +189,12 @@ fun TimeCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 8.dp),
+        onClick = {
+            rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                set("itemId", entry.id)
+            }
+            rootNavController.navigate(Routes.ItemDetail.route)
+        },
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -247,16 +253,6 @@ fun DropDownMenu(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = false }
     ) {
-        DropdownMenuItem(
-            text = { Text("Details") },
-            onClick = {
-                expanded.value = false
-                rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
-                    set("itemId", id)
-                }
-                rootNavController.navigate(Routes.ItemDetail.route)
-            }
-        )
         DropdownMenuItem(
             text = { Text("Mark Incomplete") },
             onClick = {
