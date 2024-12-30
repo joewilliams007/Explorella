@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS BucketItem (
     icon TEXT,
     latitude REAL,
     longitude REAL,
-    complete INTEGER NOT NULL DEFAULT 0,
+    complete INTEGER NOT NULL DEFAULT 1,
     timestamp INTEGER
 );
 
@@ -33,7 +33,10 @@ selectIncompleteBucketItems:
 SELECT * FROM BucketItem WHERE complete=0 ORDER BY timestamp DESC;
 
 setBucketItemComplete:
-UPDATE BucketItem SET complete=? WHERE id=?;
+UPDATE BucketItem SET complete=?, timestamp=? WHERE id=?;
+
+deleteBucketItem:
+DELETE FROM BucketItem WHERE id=?;
 
 CREATE TABLE IF NOT EXISTS Notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

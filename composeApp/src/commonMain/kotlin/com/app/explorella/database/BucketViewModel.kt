@@ -114,7 +114,7 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
         _bucketEntries.value = items
         return items
     }
-
+    
     // -----------------------------------------------------------
     // TODO-Funktionen
     // -----------------------------------------------------------
@@ -181,6 +181,12 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
         // Optional: Lade die Bucket-Einträge erneut, falls nötig
     }
 
+    fun setBucketItemComplete(complete: Long, id: Long) {
+        bucketQueries.setBucketItemComplete(complete, System.currentTimeMillis(), id)
+        getAllBucketEntriesDesc()
+    }
 
-
+    fun deleteBucketItem(id: Long) {
+        bucketQueries.deleteBucketItem(id)
+    }
 }
