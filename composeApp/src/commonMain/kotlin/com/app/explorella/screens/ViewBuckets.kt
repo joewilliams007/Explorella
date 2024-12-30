@@ -12,9 +12,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -48,18 +51,18 @@ fun ViewBucketScreen(
             )
         }
     )
+
     Spacer(modifier = Modifier.height(20.dp))
 
-
-    FloatingActionButton(
+    LargeFloatingActionButton(
         onClick = {
-            TODO("navigate to add buckets. add 'add buckets' as a route")
+            rootNavController.navigate(Routes.AddBuckets.route)
         }
     ) {
         Icon(Icons.Filled.Add, "Add Bucket")
     }
 
-    LazyColumn (
+    LazyColumn(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -67,8 +70,10 @@ fun ViewBucketScreen(
         items(viewModel.getAllBucketEntriesAsc()) { e ->
             Button(
                 onClick = {
+                    rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                        set("itemId", e.id)
+                    }
                     rootNavController.navigate(Routes.ItemDetail.route)
-                    TODO("navigate to ItemDetail")
                 }
             ) {
                 Text(e.title)

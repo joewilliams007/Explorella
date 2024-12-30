@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -62,7 +63,9 @@ fun HomeScreen(
             }
         )
         Spacer(modifier = Modifier.height(20.dp))
+        var locationQuery: String = ""
         TextField(
+            singleLine = true,
             value = name,
             onValueChange = {
                 name = it
@@ -75,12 +78,18 @@ fun HomeScreen(
             },
             keyboardActions = KeyboardActions(
                 onDone = {
+                    rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                        set("locationQuery", locationQuery)
+                    }
                     rootNavController.navigate(Routes.LocationSelector.route)
                 }
             )
         )
         Button(
             onClick = {
+                rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                    set("locationQuery", locationQuery)
+                }
                 rootNavController.navigate(Routes.LocationSelector.route)
             }
         ) {
@@ -107,14 +116,13 @@ fun HomeScreen(
     }
 }
 
-var locationQuery: String = "";
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationSelectorScreen(
     rootNavController: NavController,
     paddingValues: PaddingValues,
-    sqlDriver: SqlDriver
+    sqlDriver: SqlDriver,
+    locationQuery: String
 ) {
     var possibleTargets: List<Overpass.Element>? = null
     LaunchedEffect(Unit) {
@@ -133,7 +141,11 @@ fun LocationSelectorScreen(
     )
     Spacer(modifier = Modifier.height(20.dp))
 
-    LazyColumn (
+
+    Text("hallo LocationSelectorScreen")
+
+
+    LazyColumn(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -155,6 +167,10 @@ fun LocationSelectorScreen(
         }
     }
 }
+
+//  |
+//  |   wird das gebraucht? no use und falsche signatur der methode
+//  V
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

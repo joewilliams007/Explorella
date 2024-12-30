@@ -9,7 +9,6 @@ import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.navigation.Graph
 import com.app.explorella.navigation.Routes
 import com.app.explorella.screens.HomeScreen
-import com.app.explorella.screens.LocationSelectorScreen
 import com.app.explorella.screens.MapScreen
 import com.app.explorella.screens.TimelineScreen
 import com.app.explorella.screens.TodoScreen
@@ -27,7 +26,7 @@ fun NavGraphBuilder.mainNavGraph(
         composable(route = Routes.Home.route) {
             HomeScreen(rootNavController = rootNavController, paddingValues = innerPadding)
         }
-        composable(route = Routes.BucketList.route) {
+        composable(route = Routes.ViewBuckets.route) {
             ViewBucketScreen(
                 rootNavController = rootNavController,
                 paddingValues = innerPadding,
@@ -50,13 +49,6 @@ fun NavGraphBuilder.mainNavGraph(
         }
         composable(route = Routes.Todo.route) {
             TodoScreen(
-                rootNavController = rootNavController,
-                paddingValues = innerPadding,
-                sqlDriver = sqlDriver
-            )
-        }
-        composable(route = Routes.LocationSelector.route) {
-            LocationSelectorScreen(
                 rootNavController = rootNavController,
                 paddingValues = innerPadding,
                 sqlDriver = sqlDriver
