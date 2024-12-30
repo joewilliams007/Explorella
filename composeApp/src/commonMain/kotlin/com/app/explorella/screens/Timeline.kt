@@ -35,9 +35,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -233,12 +235,12 @@ fun DropDownMenu(
     bucketEntries: MutableState<List<BucketItem>>,
     isAscending: MutableState<Boolean>,
 ) {
-    val expanded = rememberSaveable { mutableStateOf(false) }
-    val openAlertDialog = remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    var openAlertDialog by remember { mutableStateOf(false) }
 
     IconButton(
         onClick = {
-            expanded.value = true
+            expanded = true
         },
 
         ) {
@@ -250,13 +252,13 @@ fun DropDownMenu(
     }
 
     DropdownMenu(
-        expanded = expanded.value,
-        onDismissRequest = { expanded.value = false }
+        expanded = expanded,
+        onDismissRequest = { expanded = false }
     ) {
         DropdownMenuItem(
             text = { Text("Mark Incomplete") },
             onClick = {
-                expanded.value = false
+                expanded = false
                 bucket.setBucketItemComplete(0, id)
                 updateCompleteBucketEntries(bucket, bucketEntries, isAscending)
             }
@@ -264,12 +266,12 @@ fun DropDownMenu(
         DropdownMenuItem(
             text = { Text("Delete") },
             onClick = {
-                expanded.value = false
-                openAlertDialog.value = true
+                expanded = false
+                openAlertDialog = true
             }
         )
     }
-    if (openAlertDialog.value) {
+    if (openAlertDialog) {
         AlertDialog(
             icon = {
                 Icon(Icons.Default.Delete, contentDescription = "Example Icon")
@@ -281,12 +283,12 @@ fun DropDownMenu(
                 Text(text = "Are you sure you want to delete this Item?")
             },
             onDismissRequest = {
-                openAlertDialog.value = false
+                openAlertDialog = false
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        openAlertDialog.value = false
+                        openAlertDialog = false
                         bucket.deleteBucketItem(id)
                         updateCompleteBucketEntries(bucket, bucketEntries, isAscending)
                     }
@@ -297,7 +299,7 @@ fun DropDownMenu(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        openAlertDialog.value = false
+                        openAlertDialog = false
                     }
                 ) {
                     Text("Dismiss")
