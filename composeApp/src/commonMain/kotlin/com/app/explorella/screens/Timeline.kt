@@ -88,8 +88,7 @@ fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
 
     // Fetch and sort data
     LaunchedEffect(Unit) {
-        bucketEntries.value = bucket.getCompleteBucketEntries()
-            .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+        updateCompleteBucketEntries(bucket, bucketEntries, isAscending)
     }
 
     // Group entries by Year
@@ -118,8 +117,7 @@ fun DisplayPage(rootNavController: NavController, sqlDriver: SqlDriver) {
                     .fillMaxWidth()
                     .clickable {
                         isAscending.value = !isAscending.value
-                        bucketEntries.value = bucketEntries.value
-                            .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+                        updateCompleteBucketEntries(bucket, bucketEntries, isAscending)
                     },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -264,9 +262,7 @@ fun DropDownMenu(
             onClick = {
                 expanded.value = false
                 bucket.setBucketItemComplete(0, id)
-                bucket.getCompleteBucketEntries()
-                bucketEntries.value = bucket.getCompleteBucketEntries()
-                    .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+                updateCompleteBucketEntries(bucket, bucketEntries, isAscending)
             }
         )
         DropdownMenuItem(
@@ -296,9 +292,7 @@ fun DropDownMenu(
                     onClick = {
                         openAlertDialog.value = false
                         bucket.deleteBucketItem(id)
-                        bucket.getCompleteBucketEntries()
-                        bucketEntries.value = bucket.getCompleteBucketEntries()
-                            .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
+                        updateCompleteBucketEntries(bucket, bucketEntries, isAscending)
                     }
                 ) {
                     Text("Confirm")
@@ -315,6 +309,14 @@ fun DropDownMenu(
             }
         )
     }
+}
+fun updateCompleteBucketEntries(
+    bucket: BucketViewModel,
+    bucketEntries: MutableState<List<BucketItem>>,
+    isAscending: MutableState<Boolean>,
+    ) {
+    bucketEntries.value = bucket.getCompleteBucketEntries()
+        .sortedBy { if (isAscending.value) it.timestamp else -it.timestamp!! }
 }
 
 // Helper function to get the year from the timestamp
