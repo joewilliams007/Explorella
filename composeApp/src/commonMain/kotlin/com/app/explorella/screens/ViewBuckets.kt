@@ -50,204 +50,231 @@ fun ViewBucketScreen(
     val viewModel: BucketViewModel = BucketViewModel(sqlDriver)
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("49.474358383071454") }
-    var longitude by remember { mutableStateOf("8.534289721213689") }
+    var latitude by remember { mutableStateOf("") }
+    var longitude by remember { mutableStateOf("") }
     var searchTerm by remember { mutableStateOf("") }
     var searchActive by remember { mutableStateOf(false) }
     var searchResults by remember { mutableStateOf<List<Overpass.Element>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
     val overpass = remember { Overpass() }
 
+    var titleEmpty by remember { mutableStateOf(false) }
+
     // State to trigger recomposition
     var bucketList by remember { mutableStateOf(viewModel.getAllBucketEntriesAsc()) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Bucket List",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            )
-        },
-        modifier = Modifier.padding(paddingValues),
-        content = { innerPadding ->
-            Box(Modifier.padding(innerPadding)) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    var isLoading by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier.fillMaxSize().padding(paddingValues),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Bucket List",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        )
+        Spacer(modifier = Modifier.height(20.dp))
 
-                    SearchBar(
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                query = searchTerm,
-                                onQueryChange = { searchTerm = it },
-                                onSearch = {
-                                    // Set loading to true when the search starts
-                                    isLoading = true
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            var isLoading by remember { mutableStateOf(false) }
 
-                                    coroutineScope.launch {
-                                        val results = overpass.searchLocations(searchTerm)
-                                        searchResults = results
-                                        // Set loading to false when the search is complete
-                                        isLoading = false
-                                    }
-                                },
-                                expanded = searchActive,
-                                onExpandedChange = { searchActive = it },
-                                enabled = true,
-                                placeholder = { Text("Search for a location") }
-                            )
+            SearchBar(
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = searchTerm,
+                        onQueryChange = { searchTerm = it },
+                        onSearch = {
+                            // Set loading to true when the search starts
+                            isLoading = true
+
+                            coroutineScope.launch {
+                                val results = overpass.searchLocations(searchTerm)
+                                searchResults = results
+                                // Set loading to false when the search is complete
+                                isLoading = false
+                            }
                         },
                         expanded = searchActive,
                         onExpandedChange = { searchActive = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = SearchBarDefaults.colors(),
-                        tonalElevation = SearchBarDefaults.TonalElevation,
-                        shadowElevation = SearchBarDefaults.ShadowElevation,
-                        windowInsets = SearchBarDefaults.windowInsets,
-                        content = {
-                            // Display a progress bar when the search is loading
-                            if (isLoading) {
-                                LinearProgressIndicator(
-                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                    color = MaterialTheme.colorScheme.primary
+                        enabled = true,
+                        placeholder = { Text("Search for a location") }
+                    )
+                },
+                expanded = searchActive,
+                onExpandedChange = { searchActive = it },
+                modifier = Modifier.fillMaxWidth(),
+                colors = SearchBarDefaults.colors(),
+                tonalElevation = SearchBarDefaults.TonalElevation,
+                shadowElevation = SearchBarDefaults.ShadowElevation,
+                windowInsets = SearchBarDefaults.windowInsets,
+                content = {
+                    // Display a progress bar when the search is loading
+                    if (isLoading) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        LazyColumn {
+                            items(searchResults) { result ->
+                                // Each item in the result list can be selected by tapping on it
+                                Text(
+                                    text = "${result.tags["name"]} (${result.lat}, ${result.lon})",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            searchTerm = ""
+                                            title = result.tags["name"] ?: "Unknown Location"
+                                            description = result.tags["name"] ?: "Unknown Location"
+                                            searchActive = false
+                                            latitude = result.lat.toString()
+                                            longitude = result.lon.toString()
+                                        }
+                                        .padding(16.dp)
                                 )
-                            } else {
-                                LazyColumn {
-                                    items(searchResults) { result ->
-                                        // Each item in the result list can be selected by tapping on it
-                                        Text(
-                                            text = "${result.tags["name"]} (${result.lat}, ${result.lon})",
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    searchTerm = ""
-                                                    title = result.tags["name"] ?: "Unknown Location"
-                                                    searchActive = false
-                                                    latitude = result.lat.toString()
-                                                    longitude = result.lon.toString()
-                                                }
-                                                .padding(16.dp)
-                                        )
-                                    }
+                            }
 
-                                }
+                        }
+                    }
+                }
+            )
+            if (longitude.isBlank() || latitude.isBlank()) {
+                Text(
+                    text = "Please select a location.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            } else {
+                // Eingabezeile für neuen Bucket
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = { Text("Bucket Title") },
+                        modifier = Modifier.weight(1f),
+                        isError = titleEmpty,
+                        supportingText = {
+                            if (titleEmpty) {
+                                Text(
+                                    text = "Please enter a Title.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.error
+                                )
                             }
                         }
                     )
-                    // Eingabezeile für neuen Bucket
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = title,
-                            onValueChange = { title = it },
-                            label = { Text("Bucket Title") },
-                            modifier = Modifier.weight(1f)
-                        )
 
-                        Button(onClick = {
-                            if (title.isNotBlank()) {
-                                viewModel.addBucketEntry(
-                                    title = title,
-                                    description = null, // Keine Beschreibung nötig
-                                    priority = 0,
-                                    icon = null,
-                                    latitude = latitude.toDouble(),
-                                    longitude = longitude.toDouble(),
-                                    timestamp = System.currentTimeMillis()
-                                )
-                                title = "" // Zurücksetzen des Textfelds
-                                bucketList = viewModel.getAllBucketEntriesAsc() // Update the bucket list
-                            }
-                        }) {
-                            Text("Add")
+                    Button(onClick = {
+                        if (title.isNotBlank()) {
+                            viewModel.addBucketEntry(
+                                title = title,
+                                description = description, // Keine Beschreibung nötig
+                                priority = 0,
+                                icon = null,
+                                latitude = latitude.toDouble(),
+                                longitude = longitude.toDouble(),
+                                timestamp = System.currentTimeMillis()
+                            )
+                            title = "" // Zurücksetzen des Textfelds
+                            description = ""
+                            latitude = ""
+                            longitude = ""
+                            bucketList = viewModel.getAllBucketEntriesAsc() // Update the bucket list
+                        } else {
+                            titleEmpty = true
                         }
+                    }) {
+                        Text("Add")
                     }
+                }
+            }
 
-                    // Liste der Buckets
-                    LazyColumn(
+            // Liste der Buckets
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(PaddingValues(16.dp, 0.dp, 16.dp, 8.dp)),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(bucketList) { e ->
+                    ElevatedCard(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(PaddingValues(16.dp, 0.dp, 16.dp, 8.dp)),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        items(bucketList) { e ->
-                            ElevatedCard(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Checkbox(
-                                        checked = e.complete == 1L,
-                                        onCheckedChange = { isChecked ->
-                                            viewModel.updateBucketEntry(
-                                                id = e.id,
-                                                title = e.title,
-                                                description = e.description,
-                                                priority = e.priority ?: 0,
-                                                icon = e.icon,
-                                                latitude = e.latitude ?: 0.0,
-                                                longitude = e.longitude ?: 0.0,
-                                                complete = if (isChecked) 1 else 0,
-                                                timestamp = System.currentTimeMillis()
-                                            )
-                                            bucketList = viewModel.getAllBucketEntriesAsc() // Update the bucket list
-                                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Checkbox(
+                                checked = e.complete == 1L,
+                                onCheckedChange = { isChecked ->
+                                    viewModel.updateBucketEntry(
+                                        id = e.id,
+                                        title = e.title,
+                                        description = e.description,
+                                        priority = e.priority ?: 0,
+                                        icon = e.icon,
+                                        latitude = e.latitude ?: 0.0,
+                                        longitude = e.longitude ?: 0.0,
+                                        complete = if (isChecked) 1 else 0,
+                                        timestamp = System.currentTimeMillis()
                                     )
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.weight(1f).clickable {
-                                            rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
-                                                set("itemId", e.id)
-                                            }
-                                            rootNavController.navigate(Routes.ItemDetail.route)
-                                        }
-                                    ) {
-                                        Text(
-                                            text = e.title,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete Icon",
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .clickable {
-                                                viewModel.deleteBucketItem(e.id)
-                                                bucketList = viewModel.getAllBucketEntriesAsc() // Update the bucket list
-                                            }
-                                    )
+                                    bucketList = viewModel.getAllBucketEntriesAsc() // Update the bucket list
                                 }
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f).clickable {
+                                    rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                                        set("itemId", e.id)
+                                    }
+                                    rootNavController.navigate(Routes.ItemDetail.route)
+                                }
+                            ) {
+                                Text(
+                                    text = e.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                             }
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete Icon",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        viewModel.deleteBucketItem(e.id)
+                                        bucketList = viewModel.getAllBucketEntriesAsc() // Update the bucket list
+                                    }
+                            )
                         }
                     }
                 }
             }
         }
-    )
+    }
 }
