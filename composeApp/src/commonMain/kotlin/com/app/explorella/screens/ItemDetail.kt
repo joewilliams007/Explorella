@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 
@@ -59,6 +60,26 @@ fun ItemDetailScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Zurück-Button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.ArrowBack,
+                contentDescription = "Back Icon",
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { rootNavController.popBackStack() }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Item Details",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
         // Titel mit Checkbox
         Row(
             verticalAlignment = Alignment.CenterVertically,
