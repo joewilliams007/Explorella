@@ -24,6 +24,7 @@ sealed class Routes(var route: String) {
     data object ViewBuckets : Routes("viewBuckets")
     data object Todo : Routes("toDo")
     data object Map : Routes("map")
+    data object LocationPickerScreen : Routes("locationPickerScreen")
     data object LocationSelector : Routes("locationSelector")
 }
 

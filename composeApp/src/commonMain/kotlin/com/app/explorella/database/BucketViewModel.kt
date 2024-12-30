@@ -151,12 +151,11 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
      * Setzt das 'complete'-Feld eines Todos (abgehakt/erledigt).
      *  - [complete]: true/false => 1/0 in der DB
      */
-    fun setTodoComplete(todoId: Long, complete: Boolean, bucketId: Long) {
+    fun setTodoComplete(todoId: Long, complete: Boolean) {
         bucketQueries.setCompleteTodo(
             complete = if (complete) 1 else 0,
             id = todoId
         )
-        loadTodosForBucket(bucketId)
     }
 
     /**
