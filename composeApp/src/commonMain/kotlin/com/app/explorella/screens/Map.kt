@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +49,7 @@ import com.app.explorella.BucketItem
 import com.app.explorella.addMapChangeListener
 import com.app.explorella.addMapClickListener
 import com.app.explorella.addMarkerClickListener
+import com.app.explorella.api.Weather
 import com.app.explorella.clearMarkers
 import com.app.explorella.database.BucketViewModel
 import com.app.explorella.database.PreferencesViewModel
@@ -70,6 +73,7 @@ import com.app.explorella.zoomMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import java.io.IOException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -290,12 +294,48 @@ fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket
                     contentAlignment = Alignment.TopStart,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Text(
-                        text = bucketEntries[pageIndex].title,
-                        textAlign = TextAlign.Left,
-                        fontSize = 24.sp,
-                        modifier = Modifier.padding(16.dp)
-                    )
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.TopStart)
+                    ) {
+                        Text(
+                            text = bucketEntries[pageIndex].title,
+                            textAlign = TextAlign.Start,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (bucketEntries[pageIndex].latitude == null || bucketEntries[pageIndex].latitude == 0.0) {
+                            Text(
+                                text = "No location set",
+                                textAlign = TextAlign.Start,
+                                fontSize = 20.sp,
+                            )
+                        } else {
+                            var weatherText by remember { mutableStateOf("") }
+
+                            LaunchedEffect(Unit) {
+                                weatherText = try {
+                                    val temperature = Weather().getWeather(Coordinate(
+                                        bucketEntries[pageIndex].latitude!!, bucketEntries[pageIndex].longitude!!
+                                    ))
+                                    "$temperature°C"
+                                } catch (e: IOException) {
+                                    ""
+                                } catch (e: Exception) {
+                                    ""
+                                }
+                            }
+                            Text(
+                                text = weatherText,
+                                textAlign = TextAlign.Start,
+                                fontSize = 20.sp,
+                            )
+                        }
+                    }
                     Button(
                         onClick = {
                             rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
@@ -307,7 +347,7 @@ fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket
                             .align(Alignment.TopEnd)
                             .padding(16.dp)
                     ) {
-                        Text("details") // TODO: Replace by string Res or change open behaviour when detail page implemented.
+                        Text("View")
                     }
                 }
             }
@@ -385,6 +425,8 @@ private fun BucketItem.zoom() {
  */
 fun displayMarkers(bucketEntries :List<BucketItem>) {
     bucketEntries.forEach {
-        drawMarker(it)
+        if (it.latitude != null && it.latitude != 0.0) {
+            drawMarker(it)
+        }
     }
 }
