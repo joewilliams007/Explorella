@@ -33,6 +33,12 @@ import app.cash.sqldelight.db.SqlDriver
 import com.app.explorella.database.BucketViewModel
 import com.app.explorella.navigation.Routes
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.runtime.rememberCoroutineScope
+import com.app.explorella.overpass.Overpass
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +48,15 @@ fun ViewBucketScreen(
     sqlDriver: SqlDriver
 ) {
     val viewModel: BucketViewModel = BucketViewModel(sqlDriver)
-    val newBucketTitle = remember { mutableStateOf("") } // Lokaler State für den Titel
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf("49.474358383071454") }
+    var longitude by remember { mutableStateOf("8.534289721213689") }
+    var searchTerm by remember { mutableStateOf("") }
+    var searchActive by remember { mutableStateOf(false) }
+    var searchResults by remember { mutableStateOf<List<Overpass.Element>>(emptyList()) }
+    val coroutineScope = rememberCoroutineScope()
+    val overpass = remember { Overpass() }
 
     // State to trigger recomposition
     var bucketList by remember { mutableStateOf(viewModel.getAllBucketEntriesAsc()) }
@@ -63,7 +77,74 @@ fun ViewBucketScreen(
         modifier = Modifier.padding(paddingValues),
         content = { innerPadding ->
             Box(Modifier.padding(innerPadding)) {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    var isLoading by remember { mutableStateOf(false) }
+
+                    SearchBar(
+                        inputField = {
+                            SearchBarDefaults.InputField(
+                                query = searchTerm,
+                                onQueryChange = { searchTerm = it },
+                                onSearch = {
+                                    // Set loading to true when the search starts
+                                    isLoading = true
+
+                                    coroutineScope.launch {
+                                        val results = overpass.searchLocations(searchTerm)
+                                        searchResults = results
+                                        // Set loading to false when the search is complete
+                                        isLoading = false
+                                    }
+                                },
+                                expanded = searchActive,
+                                onExpandedChange = { searchActive = it },
+                                enabled = true,
+                                placeholder = { Text("Search for a location") }
+                            )
+                        },
+                        expanded = searchActive,
+                        onExpandedChange = { searchActive = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = SearchBarDefaults.colors(),
+                        tonalElevation = SearchBarDefaults.TonalElevation,
+                        shadowElevation = SearchBarDefaults.ShadowElevation,
+                        windowInsets = SearchBarDefaults.windowInsets,
+                        content = {
+                            // Display a progress bar when the search is loading
+                            if (isLoading) {
+                                LinearProgressIndicator(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            } else {
+                                LazyColumn {
+                                    items(searchResults) { result ->
+                                        // Each item in the result list can be selected by tapping on it
+                                        Text(
+                                            text = "${result.tags["name"]} (${result.lat}, ${result.lon})",
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    searchTerm = ""
+                                                    title = result.tags["name"] ?: "Unknown Location"
+                                                    searchActive = false
+                                                    latitude = result.lat.toString()
+                                                    longitude = result.lon.toString()
+                                                }
+                                                .padding(16.dp)
+                                        )
+                                    }
+
+                                }
+                            }
+                        }
+                    )
                     // Eingabezeile für neuen Bucket
                     Row(
                         modifier = Modifier
@@ -73,24 +154,24 @@ fun ViewBucketScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         OutlinedTextField(
-                            value = newBucketTitle.value,
-                            onValueChange = { newBucketTitle.value = it },
+                            value = title,
+                            onValueChange = { title = it },
                             label = { Text("Bucket Title") },
                             modifier = Modifier.weight(1f)
                         )
 
                         Button(onClick = {
-                            if (newBucketTitle.value.isNotBlank()) {
+                            if (title.isNotBlank()) {
                                 viewModel.addBucketEntry(
-                                    title = newBucketTitle.value,
+                                    title = title,
                                     description = null, // Keine Beschreibung nötig
                                     priority = 0,
                                     icon = null,
-                                    latitude = 0.0,
-                                    longitude = 0.0,
+                                    latitude = latitude.toDouble(),
+                                    longitude = longitude.toDouble(),
                                     timestamp = System.currentTimeMillis()
                                 )
-                                newBucketTitle.value = "" // Zurücksetzen des Textfelds
+                                title = "" // Zurücksetzen des Textfelds
                                 bucketList = viewModel.getAllBucketEntriesAsc() // Update the bucket list
                             }
                         }) {
