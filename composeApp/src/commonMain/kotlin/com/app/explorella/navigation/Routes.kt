@@ -18,7 +18,6 @@ object Graph {
 }
 
 sealed class Routes(var route: String) {
-    data object Home : Routes("home")
     data object ItemDetail : Routes("itemDetail")
     data object AddBuckets : Routes("addBuckets")
     data object Timeline : Routes("timeline")
@@ -29,12 +28,6 @@ sealed class Routes(var route: String) {
 }
 
 val navigationItemsLists = listOf(
-    NavigationItem(
-        unSelectedIcon = Icons.Outlined.Home,
-        selectedIcon = Icons.Filled.Home,
-        title = "Home",
-        route = Routes.Home.route,
-    ),
     NavigationItem(
         unSelectedIcon = Icons.Outlined.Favorite,
         selectedIcon = Icons.Filled.Favorite,
@@ -52,11 +45,5 @@ val navigationItemsLists = listOf(
         selectedIcon = Icons.Filled.Star,
         title = "Bucket list",
         route = Routes.ViewBuckets.route,
-    ),
-    NavigationItem(
-        unSelectedIcon = Icons.Outlined.Check,
-        selectedIcon = Icons.Filled.Check,
-        title = "Todo",
-        route = Routes.Todo.route,
     )
 )
