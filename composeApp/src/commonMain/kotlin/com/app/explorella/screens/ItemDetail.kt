@@ -205,6 +205,26 @@ fun ItemDetailScreen(
                 savedStateHandle.remove<Coordinate>("coordinate")
             }
         }
+
+        LaunchedEffect(selectedCoordinate) {
+            // This block of code will be executed whenever selectedCoordinate changes
+            selectedCoordinate?.let {
+                // Your code here, for example:
+                println("Selected coordinate changed: $it")
+                bucketViewModel.updateBucketEntry(
+                    id = item.id,
+                    title = item.title,
+                    description = item.description,
+                    priority = item.priority ?: 0,
+                    icon = item.icon,
+                    latitude = selectedCoordinate!!.latitude,
+                    longitude = selectedCoordinate!!.longitude,
+                    complete = item.complete,
+                    timestamp = System.currentTimeMillis()
+                )
+            }
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
