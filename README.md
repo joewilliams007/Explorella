@@ -1,3 +1,6 @@
+<p align="center"> <img src="https://github.com/joewilliams007/Explorella/blob/main/composeApp/src/androidMain/res/drawable/icon.png?raw=true" /> </p>
+
+
 # Explorella
 ## Appbeschreibung
 
