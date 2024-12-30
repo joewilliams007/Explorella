@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.navigation.NavController
 import app.cash.sqldelight.db.SqlDriver
@@ -66,11 +67,13 @@ fun ItemDetailScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Filled.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back Icon",
                 modifier = Modifier
                     .size(32.dp)
-                    .clickable { rootNavController.popBackStack() }
+                    .clickable { if (rootNavController.currentBackStackEntry != null) {
+                        rootNavController.popBackStack()
+                    } }
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
