@@ -254,14 +254,6 @@ fun DropDownMenu(
         onDismissRequest = { expanded.value = false }
     ) {
         DropdownMenuItem(
-            text = { Text("Mark Incomplete") },
-            onClick = {
-                expanded.value = false
-                bucket.setBucketItemComplete(0, id)
-                updateCompleteBucketEntries(bucket, bucketEntries, isAscending)
-            }
-        )
-        DropdownMenuItem(
             text = { Text("Delete") },
             onClick = {
                 expanded.value = false
