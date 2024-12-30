@@ -306,13 +306,13 @@ fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket
                             fontWeight = FontWeight.Bold,
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         if (bucketEntries[pageIndex].latitude == null || bucketEntries[pageIndex].latitude == 0.0) {
                             Text(
                                 text = "No location set",
                                 textAlign = TextAlign.Start,
-                                fontSize = 20.sp,
+                                fontSize = 16.sp,
                             )
                         } else {
                             var weatherText by remember { mutableStateOf("") }
@@ -332,7 +332,7 @@ fun pager(rootNavController: NavController, paddingValues: PaddingValues, bucket
                             Text(
                                 text = weatherText,
                                 textAlign = TextAlign.Start,
-                                fontSize = 20.sp,
+                                fontSize = 16.sp,
                             )
                         }
                     }
