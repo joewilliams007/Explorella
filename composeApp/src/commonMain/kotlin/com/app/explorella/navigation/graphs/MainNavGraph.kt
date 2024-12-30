@@ -10,7 +10,6 @@ import com.app.explorella.navigation.Graph
 import com.app.explorella.navigation.Routes
 import com.app.explorella.screens.MapScreen
 import com.app.explorella.screens.TimelineScreen
-import com.app.explorella.screens.TodoScreen
 import com.app.explorella.screens.ViewBucketScreen
 
 fun NavGraphBuilder.mainNavGraph(
@@ -38,13 +37,6 @@ fun NavGraphBuilder.mainNavGraph(
         }
         composable(route = Routes.Map.route) {
             MapScreen(
-                rootNavController = rootNavController,
-                paddingValues = innerPadding,
-                sqlDriver = sqlDriver
-            )
-        }
-        composable(route = Routes.Todo.route) {
-            TodoScreen(
                 rootNavController = rootNavController,
                 paddingValues = innerPadding,
                 sqlDriver = sqlDriver
