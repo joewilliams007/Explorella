@@ -73,7 +73,11 @@ class BucketViewModel(sqlDriver: SqlDriver) : ViewModel() {
     }
 
     fun setBucketItemComplete(complete: Long, id: Long) {
-        bucketQueries.setBucketItemComplete(complete, id, System.currentTimeMillis())
+        bucketQueries.setBucketItemComplete(complete, System.currentTimeMillis(), id)
         getAllBucketEntriesDesc()
+    }
+
+    fun deleteBucketItem(id: Long) {
+        bucketQueries.deleteBucketItem(id)
     }
 }
