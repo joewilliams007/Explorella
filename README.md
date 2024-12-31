@@ -6,6 +6,12 @@
 
 Die App soll Reisende dabei unterstützen, ihre Reiseplanung effizient zu organisieren. Sie ermöglicht das Erstellen und Verwalten von Checklisten für Orte, die sie besuchen möchten, sowie das Markieren bereits besuchter Länder. Es gibt auch die Möglichkeit, Bucketlists für Traumreiseziele zu erstellen und die Reisehistorie zu dokumentieren. 
 
+## Kompilieren
+
+Zum Kompilieren wird die neuste Version von Android Studio benötigt.
+
+(Falls sich Android Studio weiterhin beschwert, die Android Studio Download Seite auf Englisch stellen da die deutsche Seite nicht immer aktuell ist)
+
 ## Funktionen
 
 1. Bucketlist für Reiseziele:
