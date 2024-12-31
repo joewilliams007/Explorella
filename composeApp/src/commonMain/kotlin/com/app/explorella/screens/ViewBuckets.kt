@@ -125,7 +125,12 @@ fun ViewBucketScreen(
 
                                 ElevatedCard(
                                     modifier = Modifier
-                                        .fillMaxWidth(),
+                                        .fillMaxWidth().clickable {
+                                        rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
+                                            set("itemId", e.id)
+                                        }
+                                        rootNavController.navigate(Routes.ItemDetail.route)
+                                    },
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
                                     Row(
@@ -154,12 +159,7 @@ fun ViewBucketScreen(
                                         )
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.weight(1f).clickable {
-                                                rootNavController.currentBackStackEntry?.savedStateHandle?.apply {
-                                                    set("itemId", e.id)
-                                                }
-                                                rootNavController.navigate(Routes.ItemDetail.route)
-                                            }
+                                            modifier = Modifier.weight(1f)
                                         ) {
                                             Text(
                                                 text = e.title,
