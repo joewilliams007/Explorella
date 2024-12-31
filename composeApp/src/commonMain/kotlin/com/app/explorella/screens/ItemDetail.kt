@@ -321,7 +321,6 @@ fun ItemDetailScreen(
                 Text("Add")
             }
         }
-
         // Liste der Todos
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             println("Current TodoList: $todoList") // Debugging
@@ -330,10 +329,12 @@ fun ItemDetailScreen(
                     task = todo.task,
                     onDelete = {
                         bucketViewModel.deleteTodo(todo.id)
+                        bucketViewModel.loadTodosForBucket(item.id)
                     },
                     onCheckedChange = { isChecked ->
                         println("Set id "+todo.id+" to state "+isChecked)
                         bucketViewModel.setTodoComplete(todo.id,isChecked)
+                        bucketViewModel.loadTodosForBucket(item.id)
                     }, todo.complete
                 )
             }
@@ -343,7 +344,7 @@ fun ItemDetailScreen(
 
 @Composable
 fun TodoItemCard(task: String, onDelete: () -> Unit, onCheckedChange: (Boolean) -> Unit, isCheckedInitial: Long) {
-    var isChecked by remember { mutableStateOf(isCheckedInitial == 1L) }
+    var isChecked = isCheckedInitial == 1L
 
     Card(
         modifier = Modifier
